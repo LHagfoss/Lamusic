@@ -17,7 +17,27 @@ export const musicService = {
             .from("artists")
             .select("*")
             .ilike("name", `%${query}%`)
-            .limit(10);
+            .limit(20);
+        if (error) throw error;
+        return data;
+    },
+
+    async searchSongs(query: string) {
+        const { data, error } = await supabase
+            .from("songs")
+            .select("*, artists(name, image_url), albums(title, cover_url)")
+            .ilike("title", `%${query}%`)
+            .limit(20);
+        if (error) throw error;
+        return data;
+    },
+
+    async searchAlbums(query: string) {
+        const { data, error } = await supabase
+            .from("albums")
+            .select("*, artists(name, image_url)")
+            .ilike("title", `%${query}%`)
+            .limit(20);
         if (error) throw error;
         return data;
     },

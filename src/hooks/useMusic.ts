@@ -21,6 +21,20 @@ export function useMusic() {
             enabled: query.length > 0,
         });
 
+    const useSearchSongs = (query: string) =>
+        useQuery({
+            queryKey: ["songs", "search", query],
+            queryFn: () => musicService.searchSongs(query),
+            enabled: query.length > 0,
+        });
+
+    const useSearchAlbums = (query: string) =>
+        useQuery({
+            queryKey: ["albums", "search", query],
+            queryFn: () => musicService.searchAlbums(query),
+            enabled: query.length > 0,
+        });
+
     const useAlbums = (artistId?: string) =>
         useQuery({
             queryKey: ["albums", artistId],
@@ -212,6 +226,8 @@ export function useMusic() {
     return {
         useArtists,
         useSearchArtists,
+        useSearchSongs,
+        useSearchAlbums,
         useAlbums,
         useLibrary,
         useMyContent,

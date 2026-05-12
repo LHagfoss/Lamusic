@@ -1,73 +1,83 @@
 import { LegendList } from "@legendapp/list";
-import { Image } from "expo-image";
 import { Stack, useRouter } from "expo-router";
-import { SymbolView } from "expo-symbols";
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import { useState } from "react";
+import {
+    ActivityIndicator,
+    ScrollView,
+    useWindowDimensions,
+    View,
+} from "react-native";
+import Animated, {
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from "react-native-reanimated";
 import { useCSSVariable } from "uniwind";
-import { AppText, AppDivider } from "@/src/components";
+import { AppDivider, AppText, SavedRow, SegmentedControl } from "@/src/components";
+import { useMusic } from "@/src/hooks/useMusic";
 import { usePlayerStore } from "@/src/lib/playerStore";
-import { searchTracks, type JamendoTrack } from "@/src/services/jamendoService";
 
-const GENRES = [
-    "Rock", "Electronic", "Jazz", "Pop",
-    "Classical", "Hip-Hop", "Ambient", "Folk",
-    "Metal", "R&B", "Reggae", "Country",
-] as const;
-
-function formatDuration(s: number) {
-    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
+const TABS = ["Songs", "Albums", "Artists"] as const;
 
 export default function SearchScreen() {
+    const { width } = useWindowDimensions();
     const router = useRouter();
     const playTrack = usePlayerStore((s) => s.playTrack);
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
 
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState<JamendoTrack[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+    const [tabIndex, setTabIndex] = useState(0);
 
-    useEffect(() => {
-        if (!query.trim()) {
-            setResults([]);
-            setLoading(false);
-            setError(null);
-            return;
-        }
-        setLoading(true);
-        setError(null);
-        clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(async () => {
-            try {
-                const tracks = await searchTracks(query.trim());
-                setResults(tracks);
-            } catch {
-                setError("Search failed. Check connection.");
-            } finally {
-                setLoading(false);
-            }
-        }, 400);
-        return () => clearTimeout(debounceRef.current);
-    }, [query]);
+    const { useSearchSongs, useSearchAlbums, useSearchArtists, useRecentSongs } = useMusic();
 
-    function handlePlay(track: JamendoTrack) {
-        playTrack({
-            id: track.id,
-            title: track.name,
-            artist: track.artist_name,
-            cover: { uri: track.album_image || track.image },
-            url: track.audio,
-            duration: track.duration,
+    const { data: songs = [], isFetching: songsFetching } = useSearchSongs(query);
+    const { data: albums = [], isFetching: albumsFetching } = useSearchAlbums(query);
+    const { data: artists = [], isFetching: artistsFetching } = useSearchArtists(query);
+    const { data: recentSongs = [] } = useRecentSongs();
+
+    const isLoading = songsFetching || albumsFetching || artistsFetching;
+
+    const translateX = useSharedValue(0);
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: translateX.value }],
+    }));
+
+    function handleTabChange(index: number) {
+        setTabIndex(index);
+        translateX.value = withTiming(-index * width, {
+            duration: 400,
+            easing: Easing.out(Easing.exp),
         });
-        // TODO: log play_history to Supabase
+    }
+
+    function handleSongPress(item: any) {
+        playTrack({
+            id: item.id,
+            title: item.title,
+            artist: item.artists?.name,
+            cover: { uri: item.albums?.cover_url || item.cover_url },
+            url: item.audio_url,
+            duration: item.duration,
+        });
         router.push("/player");
     }
 
-    const showBrowse = !query.trim() && !loading;
-    const showNoResults = query.trim() && !loading && results.length === 0 && !error;
+    function handleAlbumPress(item: any) {
+        router.push({
+            pathname: "/library/album",
+            params: { albumId: item.id, artistName: item.artists?.name },
+        });
+    }
+
+    function handleArtistPress(item: any) {
+        router.push({
+            pathname: "/library/artist",
+            params: { name: item.name },
+        });
+    }
+
+    const showEmpty = !query.trim();
 
     return (
         <>
@@ -86,133 +96,133 @@ export default function SearchScreen() {
                 keyboardDismissMode="on-drag"
                 showsVerticalScrollIndicator={false}
             >
-                {/* Loading */}
-                {loading && (
-                    <View className="items-center pt-20">
-                        <ActivityIndicator size="large" />
-                    </View>
-                )}
-
-                {/* Browse genres */}
-                {showBrowse && (
-                    <View className="px-4 pt-4">
-                        <AppText className="text-lg font-bold text-primary-text mb-3">
-                            Browse
+                {/* Empty state — recent songs */}
+                {showEmpty && (
+                    <View className="pt-4">
+                        <AppText className="text-lg font-bold text-primary-text px-4 mb-2">
+                            Recently Added
                         </AppText>
-                        <View className="flex-row flex-wrap gap-2">
-                            {GENRES.map((genre) => (
-                                <Pressable
-                                    key={genre}
-                                    onPress={() => setQuery(genre)}
-                                    style={({ pressed }) => ({
-                                        opacity: pressed ? 0.7 : 1,
-                                        backgroundColor: "#F2F2F7",
-                                        paddingHorizontal: 16,
-                                        paddingVertical: 10,
-                                        borderRadius: 20,
-                                    })}
-                                >
-                                    <AppText className="text-primary-text font-medium">
-                                        {genre}
-                                    </AppText>
-                                </Pressable>
-                            ))}
-                        </View>
-                    </View>
-                )}
-
-                {/* No results */}
-                {showNoResults && (
-                    <View className="items-center pt-20 gap-3">
-                        <SymbolView
-                            name="magnifyingglass"
-                            size={40}
-                            tintColor={secondaryText}
-                        />
-                        <AppText className="text-secondary-text">
-                            No results for "{query}"
-                        </AppText>
-                    </View>
-                )}
-
-                {/* Error */}
-                {error && !loading && (
-                    <View className="items-center pt-20">
-                        <AppText className="text-secondary-text">{error}</AppText>
-                    </View>
-                )}
-
-                {/* Results */}
-                {!loading && results.length > 0 && (
-                    <LegendList
-                        data={results}
-                        keyExtractor={(item) => item.id}
-                        scrollEnabled={false}
-                        ItemSeparatorComponent={() => <AppDivider />}
-                        renderItem={({ item }) => (
-                            <Pressable
-                                onPress={() => handlePlay(item)}
-                                style={({ pressed }) => ({
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                    paddingVertical: 10,
-                                    paddingHorizontal: 16,
-                                    backgroundColor: pressed
-                                        ? "rgba(0,0,0,0.05)"
-                                        : "transparent",
-                                })}
-                            >
-                                <View
-                                    style={{
-                                        width: 48,
-                                        height: 48,
-                                        borderRadius: 8,
-                                        backgroundColor: "#E5E5E5",
-                                        overflow: "hidden",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        flexShrink: 0,
-                                    }}
-                                >
-                                    {item.album_image || item.image ? (
-                                        <Image
-                                            source={{
-                                                uri: item.album_image || item.image,
-                                            }}
-                                            style={{ width: "100%", height: "100%" }}
-                                            contentFit="cover"
-                                        />
-                                    ) : (
-                                        <SymbolView
-                                            name="music.note"
-                                            size={20}
-                                            tintColor={secondaryText}
-                                        />
-                                    )}
-                                </View>
-
-                                <View style={{ flex: 1, marginLeft: 12 }}>
-                                    <AppText
-                                        className="text-primary-text font-medium"
-                                        numberOfLines={1}
-                                    >
-                                        {item.name}
-                                    </AppText>
-                                    <AppText
-                                        className="text-secondary-text text-sm"
-                                        numberOfLines={1}
-                                    >
-                                        {item.artist_name}
-                                        {item.album_name ? ` · ${item.album_name}` : ""}
-                                    </AppText>
-                                </View>
-
-                                <AppText className="text-secondary-text text-sm ml-4">
-                                    {formatDuration(item.duration)}
+                        {recentSongs.length === 0 ? (
+                            <View className="p-8 items-center">
+                                <AppText className="text-secondary-text">
+                                    No songs uploaded yet.
                                 </AppText>
-                            </Pressable>
+                            </View>
+                        ) : (
+                            recentSongs.map((item: any, i: number) => (
+                                <View key={item.id}>
+                                    <SavedRow
+                                        item={item}
+                                        secondaryText={secondaryText}
+                                        type="Songs"
+                                        onPress={() => handleSongPress(item)}
+                                    />
+                                    {i < recentSongs.length - 1 && <AppDivider />}
+                                </View>
+                            ))
                         )}
-                    />
+                    </View>
+                )}
+
+                {/* Search results */}
+                {!showEmpty && (
+                    <>
+                        <SegmentedControl
+                            values={TABS}
+                            selectedIndex={tabIndex}
+                            onChange={handleTabChange}
+                        />
+
+                        {isLoading && (
+                            <View className="items-center py-10">
+                                <ActivityIndicator size="large" />
+                            </View>
+                        )}
+
+                        {!isLoading && (
+                            <Animated.View
+                                style={[
+                                    { flexDirection: "row", width: width * 3 },
+                                    animatedStyle,
+                                ]}
+                            >
+                                {/* Songs tab */}
+                                <View style={{ width }}>
+                                    <LegendList
+                                        data={songs}
+                                        keyExtractor={(item) => item.id}
+                                        scrollEnabled={false}
+                                        ItemSeparatorComponent={() => <AppDivider />}
+                                        renderItem={({ item }) => (
+                                            <SavedRow
+                                                item={item}
+                                                secondaryText={secondaryText}
+                                                type="Songs"
+                                                onPress={() => handleSongPress(item)}
+                                            />
+                                        )}
+                                        ListEmptyComponent={() => (
+                                            <View className="p-8 items-center">
+                                                <AppText className="text-secondary-text">
+                                                    No songs found.
+                                                </AppText>
+                                            </View>
+                                        )}
+                                    />
+                                </View>
+
+                                {/* Albums tab */}
+                                <View style={{ width }}>
+                                    <LegendList
+                                        data={albums}
+                                        keyExtractor={(item) => item.id}
+                                        scrollEnabled={false}
+                                        ItemSeparatorComponent={() => <AppDivider />}
+                                        renderItem={({ item }) => (
+                                            <SavedRow
+                                                item={item}
+                                                secondaryText={secondaryText}
+                                                type="Albums"
+                                                onPress={() => handleAlbumPress(item)}
+                                            />
+                                        )}
+                                        ListEmptyComponent={() => (
+                                            <View className="p-8 items-center">
+                                                <AppText className="text-secondary-text">
+                                                    No albums found.
+                                                </AppText>
+                                            </View>
+                                        )}
+                                    />
+                                </View>
+
+                                {/* Artists tab */}
+                                <View style={{ width }}>
+                                    <LegendList
+                                        data={artists}
+                                        keyExtractor={(item) => item.id}
+                                        scrollEnabled={false}
+                                        ItemSeparatorComponent={() => <AppDivider />}
+                                        renderItem={({ item }) => (
+                                            <SavedRow
+                                                item={item}
+                                                secondaryText={secondaryText}
+                                                type="Artists"
+                                                onPress={() => handleArtistPress(item)}
+                                            />
+                                        )}
+                                        ListEmptyComponent={() => (
+                                            <View className="p-8 items-center">
+                                                <AppText className="text-secondary-text">
+                                                    No artists found.
+                                                </AppText>
+                                            </View>
+                                        )}
+                                    />
+                                </View>
+                            </Animated.View>
+                        )}
+                    </>
                 )}
             </ScrollView>
         </>
