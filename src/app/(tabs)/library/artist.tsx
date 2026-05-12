@@ -1,5 +1,6 @@
 import { Button, ContextMenu, Host } from "@expo/ui/swift-ui";
 import { LegendList } from "@legendapp/list";
+import { useIsFocused } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
 import { GlassView } from "expo-glass-effect";
 import { Image } from "expo-image";
@@ -13,11 +14,13 @@ import { useCSSVariable } from "uniwind";
 import { AppButton } from "@/src/components";
 import { AppText } from "@/src/components/AppText";
 import { useMusic } from "@/src/hooks/useMusic";
+import { usePlayerStore } from "@/src/lib/playerStore";
 
 export default function ArtistScreen() {
     const { name } = useLocalSearchParams<{ name: string }>();
     const router = useRouter();
     const insets = useSafeAreaInsets();
+    const isFocused = useIsFocused();
     const { useLibrary, useToggleArtistFavorite } = useMusic();
     const { data: library, isLoading } = useLibrary();
     const toggleArtistFavoriteMutation = useToggleArtistFavorite();
@@ -28,6 +31,8 @@ export default function ArtistScreen() {
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
     const onPrimaryText = String(useCSSVariable("--color-on-primary-text"));
     const backgroundColor = String(useCSSVariable("--color-background"));
+
+    const playQueue = usePlayerStore((s) => s.playQueue);
 
     const artist = library?.find((a) => a.name === name);
     const isLiked = artist?.is_favorite ?? false;
@@ -63,9 +68,27 @@ export default function ArtistScreen() {
     }
 
     const heroImage = artist.image_url;
-    const allTracks = artist.albums?.flatMap((al: any) => al.songs) || [];
+    const allTracks =
+        artist.albums?.flatMap((al: any) =>
+            (al.songs || []).map((s: any) => ({
+                ...s,
+                albumCoverUrl: al.cover_url,
+            })),
+        ) || [];
 
-    const handlePlayArtistPress = () => {};
+    const handlePlayArtistPress = async () => {
+        if (allTracks.length === 0) return;
+        const tracks = allTracks.map((t: any) => ({
+            id: t.id,
+            title: t.title,
+            artist: artist.name,
+            cover: { uri: t.albumCoverUrl },
+            url: t.audio_url,
+            duration: t.duration,
+        }));
+        await playQueue(tracks, 0);
+        router.push("/player");
+    };
 
     const handleSongPress = (album: any) => {
         router.push({
@@ -79,41 +102,43 @@ export default function ArtistScreen() {
 
     return (
         <>
-            <Stack.Screen
-                options={{
-                    title: artist.name,
-                    unstable_headerRightItems: () => [
-                        {
-                            type: "button",
-                            label: "Like",
-                            icon: {
-                                type: "sfSymbol",
-                                name: isLiked ? "heart.fill" : "heart",
+            {isFocused && (
+                <Stack.Screen
+                    options={{
+                        title: artist.name,
+                        unstable_headerRightItems: () => [
+                            {
+                                type: "button",
+                                label: "Like",
+                                icon: {
+                                    type: "sfSymbol",
+                                    name: isLiked ? "heart.fill" : "heart",
+                                },
+                                onPress: handleToggleFavorite,
                             },
-                            onPress: handleToggleFavorite,
-                        },
-                        {
-                            type: "menu",
-                            label: "More",
-                            icon: { type: "sfSymbol", name: "ellipsis" },
-                            menu: {
-                                items: [
-                                    {
-                                        type: "action",
-                                        label: "Share",
-                                        onPress: () => {},
-                                    },
-                                    {
-                                        type: "action",
-                                        label: "Add to Library",
-                                        onPress: () => {},
-                                    },
-                                ],
+                            {
+                                type: "menu",
+                                label: "More",
+                                icon: { type: "sfSymbol", name: "ellipsis" },
+                                menu: {
+                                    items: [
+                                        {
+                                            type: "action",
+                                            label: "Share",
+                                            onPress: () => {},
+                                        },
+                                        {
+                                            type: "action",
+                                            label: "Add to Library",
+                                            onPress: () => {},
+                                        },
+                                    ],
+                                },
                             },
-                        },
-                    ],
-                }}
-            />
+                        ],
+                    }}
+                />
+            )}
 
             <ScrollView
                 contentInsetAdjustmentBehavior="automatic"
@@ -143,37 +168,7 @@ export default function ArtistScreen() {
                                 {artist.name}
                             </AppText>
 
-                            <View className="flex-row items-center gap-3 mt-2">
-                                {artist.image_url ? (
-                                    <Image
-                                        source={{ uri: artist.image_url }}
-                                        style={{
-                                            width: 52,
-                                            height: 52,
-                                            borderRadius: 26,
-                                        }}
-                                    />
-                                ) : (
-                                    <View
-                                        style={{
-                                            width: 52,
-                                            height: 52,
-                                            borderRadius: 26,
-                                            backgroundColor: "#E5E5E5",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                        }}
-                                    >
-                                        <SymbolView
-                                            name="person.fill"
-                                            size={24}
-                                            tintColor={secondaryText}
-                                        />
-                                    </View>
-                                )}
-
-                                <AppButton title="Follow" />
-                            </View>
+                            <AppButton title="Follow" />
                         </View>
 
                         <View className="flex-row items-center gap-3">
@@ -253,10 +248,13 @@ export default function ArtistScreen() {
                                         className="w-full bg-secondary rounded-xl overflow-hidden items-center justify-center"
                                         style={{ aspectRatio: 1 }}
                                     >
-                                        {(track.cover_url || track.albums?.cover_url) ? (
+                                        {track.cover_url ||
+                                        track.albumCoverUrl ? (
                                             <Image
                                                 source={{
-                                                    uri: track.cover_url || track.albums?.cover_url,
+                                                    uri:
+                                                        track.cover_url ||
+                                                        track.albumCoverUrl,
                                                 }}
                                                 style={{
                                                     width: "100%",

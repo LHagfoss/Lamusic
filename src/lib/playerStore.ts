@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import TrackPlayer, { State, RepeatMode } from "react-native-track-player";
 
 export interface Track {
@@ -18,26 +20,36 @@ interface PlayerStore {
     position: number;
     duration: number;
     repeatMode: RepeatMode;
-    
+    listenedSeconds: number;
+    hasCountedThisPlay: boolean;
+
     // Actions
     playTrack: (track: Track) => Promise<void>;
     playQueue: (tracks: Track[], startIndex: number) => Promise<void>;
     addToQueue: (track: Track) => Promise<void>;
+    playNext: (track: Track) => Promise<void>;
     removeFromQueue: (index: number) => Promise<void>;
+    clearQueue: () => Promise<void>;
+    skipToIndex: (index: number) => Promise<void>;
     togglePlay: () => Promise<void>;
     skipToNext: () => Promise<void>;
     skipToPrevious: () => Promise<void>;
     seekTo: (position: number) => Promise<void>;
     setRepeatMode: (mode: RepeatMode) => Promise<void>;
     toggleRepeatMode: () => Promise<void>;
-    
+    addListenedSeconds: (seconds: number) => void;
+    markPlayCounted: () => void;
+    resetListenProgress: () => void;
+
     // State sync (internal)
     setPlaybackState: (state: State) => void;
     setProgress: (position: number, duration: number) => void;
     setCurrentTrack: (trackId: string) => void;
 }
 
-export const usePlayerStore = create<PlayerStore>((set, get) => ({
+export const usePlayerStore = create<PlayerStore>()(
+  persist(
+    (set, get) => ({
     currentTrack: null,
     queue: [],
     currentIndex: -1,
@@ -45,6 +57,8 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     position: 0,
     duration: 0,
     repeatMode: RepeatMode.Off,
+    listenedSeconds: 0,
+    hasCountedThisPlay: false,
 
     playTrack: async (track) => {
         const { playQueue } = get();
@@ -53,10 +67,12 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 
     playQueue: async (tracks, startIndex) => {
         if (tracks.length === 0) return;
-        
+
         try {
             await TrackPlayer.reset();
-            
+            // Re-apply repeat mode — reset() clears native TrackPlayer state
+            await TrackPlayer.setRepeatMode(get().repeatMode);
+
             const nativeTracks = tracks.map(t => ({
                 id: t.id.toString(),
                 url: t.url!,
@@ -101,6 +117,29 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
         }
     },
 
+    playNext: async (track) => {
+        const { queue, currentIndex } = get();
+        const insertAt = currentIndex + 1;
+        try {
+            await TrackPlayer.add(
+                {
+                    id: track.id.toString(),
+                    url: track.url!,
+                    title: track.title,
+                    artist: track.artist,
+                    artwork: track.cover?.uri,
+                    duration: track.duration,
+                },
+                insertAt,
+            );
+            const newQueue = [...queue];
+            newQueue.splice(insertAt, 0, track);
+            set({ queue: newQueue });
+        } catch (error) {
+            console.error("Error in playNext:", error);
+        }
+    },
+
     removeFromQueue: async (index) => {
         const { queue, currentIndex } = get();
         try {
@@ -124,6 +163,24 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
             set({ queue: newQueue, currentIndex: nextIndex });
         } catch (error) {
             console.error("Error removing from queue:", error);
+        }
+    },
+
+    clearQueue: async () => {
+        try {
+            await TrackPlayer.reset();
+            set({ queue: [], currentIndex: -1, currentTrack: null, isPlaying: false });
+        } catch (error) {
+            console.error("Error clearing queue:", error);
+        }
+    },
+
+    skipToIndex: async (index) => {
+        try {
+            await TrackPlayer.skip(index);
+            await TrackPlayer.play();
+        } catch (error) {
+            console.error("Error skipping to index:", error);
         }
     },
 
@@ -199,6 +256,24 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
         if (index !== -1) {
             set({ currentIndex: index, currentTrack: queue[index] });
         }
-    }
-}));
+    },
+
+    addListenedSeconds: (seconds) => {
+        set((s) => ({ listenedSeconds: s.listenedSeconds + seconds }));
+    },
+
+    markPlayCounted: () => {
+        set({ hasCountedThisPlay: true });
+    },
+
+    resetListenProgress: () => {
+        set({ listenedSeconds: 0, hasCountedThisPlay: false });
+    },
+  }),
+  {
+    name: "player-store",
+    storage: createJSONStorage(() => AsyncStorage),
+    partialize: (state) => ({ repeatMode: state.repeatMode }),
+  }
+));
 

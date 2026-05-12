@@ -147,6 +147,13 @@ export const musicService = {
         if (error) throw error;
     },
 
+    async incrementPlayCount(songId: string) {
+        const { error } = await supabase.rpc("increment_play_count", {
+            song_id: songId,
+        });
+        if (error) throw error;
+    },
+
     async getRecentSongs() {
         const { data, error } = await supabase
             .from("songs")

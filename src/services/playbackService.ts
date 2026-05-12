@@ -10,7 +10,8 @@ export const PlaybackService = async function() {
     TrackPlayer.addEventListener(Event.PlaybackQueueEnded, async () => {
         const repeatMode = await TrackPlayer.getRepeatMode();
         if (repeatMode !== RepeatMode.Off) {
-            TrackPlayer.play();
+            await TrackPlayer.seekTo(0);
+            await TrackPlayer.play();
         }
     });
 };

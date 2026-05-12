@@ -5,9 +5,11 @@ import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
 import { Pressable, View } from "react-native";
 import TrackPlayer from "react-native-track-player";
-import { useCSSVariable } from "uniwind";
+import { Uniwind, useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
 import { usePlayerStore } from "@/src/lib/playerStore";
+
+Uniwind.setTheme('light')
 
 interface AccessoryProps {
     isPaused: boolean;
@@ -72,7 +74,8 @@ function AccessoryContent({
                 <View className="flex-1 flex-row justify-end items-center gap-2">
                     <Pressable
                         onPress={onPrev}
-                        className="w-9 h-9 rounded-full items-center justify-center"
+                        hitSlop={8}
+                        className="p-1 aspect-square rounded-full items-center justify-center"
                     >
                         <SymbolView
                             name="backward.fill"
@@ -81,17 +84,22 @@ function AccessoryContent({
                         />
                     </Pressable>
 
-                    <Pressable onPress={onTogglePause}>
+                    <Pressable
+                        onPress={onTogglePause}
+                        hitSlop={8}
+                        className="p-1 aspect-square"
+                    >
                         <SymbolView
                             name={isPaused ? "play.fill" : "pause.fill"}
-                            size={20}
+                            size={18}
                             tintColor={primaryText}
                         />
                     </Pressable>
 
                     <Pressable
                         onPress={onNext}
-                        className="w-9 h-9 rounded-full items-center justify-center"
+                        hitSlop={8}
+                        className="p-1 aspect-square rounded-full items-center justify-center"
                     >
                         <SymbolView
                             name="forward.fill"
@@ -109,7 +117,7 @@ function AccessoryContent({
             onPress={onOpen}
             className="p-3 flex-row items-center justify-between h-full w-full"
         >
-            <View className="flex-row items-center gap-2">
+            <View className="flex-1 flex-row items-center gap-2">
                 <View className="w-8 h-8 bg-secondary rounded-lg overflow-hidden">
                     {track?.cover && (
                         <Image
@@ -119,8 +127,13 @@ function AccessoryContent({
                     )}
                 </View>
 
-                <View>
-                    <AppText size="sm" className="text-primary-text">
+                <View className="flex-1">
+                    <AppText
+                        size="sm"
+                        className="text-primary-text"
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
                         {track?.title ?? ""}
                     </AppText>
                     <AppText size="xs" className="text-secondary-text">
@@ -129,11 +142,11 @@ function AccessoryContent({
                 </View>
             </View>
 
-            <View className="flex-row items-center">
+            <View className="flex-row justify-end items-center flex-1">
                 <Pressable
                     onPress={onPrev}
                     hitSlop={8}
-                    className="w-9 h-9 rounded-full items-center justify-center"
+                    className="p-2 aspect-square  rounded-full items-center justify-center"
                 >
                     <SymbolView
                         name="backward.fill"
@@ -145,7 +158,7 @@ function AccessoryContent({
                 <Pressable
                     onPress={onTogglePause}
                     hitSlop={8}
-                    className="w-10 h-10 rounded-full items-center justify-center"
+                    className="p-2 aspect-square  rounded-full items-center justify-center"
                 >
                     <SymbolView
                         name={isPaused ? "play.fill" : "pause.fill"}
@@ -157,7 +170,7 @@ function AccessoryContent({
                 <Pressable
                     onPress={onNext}
                     hitSlop={8}
-                    className="w-9 h-9 rounded-full items-center justify-center"
+                    className="p-2 aspect-square rounded-full items-center justify-center"
                 >
                     <SymbolView
                         name="forward.fill"

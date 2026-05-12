@@ -2,7 +2,12 @@ import { LegendList } from "@legendapp/list";
 import { ArrowRight } from "lucide-react-native";
 import { PressableScale } from "pressto";
 import React from "react";
-import { ActivityIndicator, ScrollView, View, RefreshControl } from "react-native";
+import {
+    ActivityIndicator,
+    RefreshControl,
+    ScrollView,
+    View,
+} from "react-native";
 import { useCSSVariable } from "uniwind";
 import { AppText, ArtistCard, GreetingCard, SongCard } from "@/src/components";
 import { useMusic } from "@/src/hooks/useMusic";
@@ -11,8 +16,16 @@ export default function HomeScreen() {
     const primaryColor = String(useCSSVariable("--color-primary"));
     const { useRecentSongs, useArtists, useLibrary } = useMusic();
 
-    const { data: recentSongs, isLoading: loadingSongs, refetch: refetchSongs } = useRecentSongs();
-    const { data: artists, isLoading: loadingArtists, refetch: refetchArtists } = useArtists();
+    const {
+        data: recentSongs,
+        isLoading: loadingSongs,
+        refetch: refetchSongs,
+    } = useRecentSongs();
+    const {
+        data: artists,
+        isLoading: loadingArtists,
+        refetch: refetchArtists,
+    } = useArtists();
     const { refetch: refetchLibrary } = useLibrary();
 
     const [refreshing, setRefreshing] = React.useState(false);
@@ -28,12 +41,15 @@ export default function HomeScreen() {
             showsVerticalScrollIndicator={false}
             contentInsetAdjustmentBehavior="automatic"
             refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor={primaryColor}
+                />
             }
         >
             <GreetingCard />
 
-            {/* Latest Added Section */}
             <View className="mb-6">
                 <View className="flex-row justify-between items-center mb-2 px-4">
                     <AppText className="text-lg font-bold">
@@ -57,7 +73,7 @@ export default function HomeScreen() {
                     <View className="p-4 items-center justify-center">
                         <ActivityIndicator color={primaryColor} />
                     </View>
-                ) : (!recentSongs || recentSongs.length === 0) ? (
+                ) : !recentSongs || recentSongs.length === 0 ? (
                     <View className="p-4">
                         <AppText className="text-secondary-text">
                             No songs added yet.
@@ -79,7 +95,6 @@ export default function HomeScreen() {
                 )}
             </View>
 
-            {/* All Artists Section */}
             <View className="mb-10">
                 <View className="flex-row justify-between items-center mb-4 px-4">
                     <AppText className="text-lg font-bold">All Artists</AppText>
@@ -89,7 +104,7 @@ export default function HomeScreen() {
                     <View className="p-4 items-center justify-center">
                         <ActivityIndicator color={primaryColor} />
                     </View>
-                ) : (!artists || artists.length === 0) ? (
+                ) : !artists || artists.length === 0 ? (
                     <View className="p-4">
                         <AppText className="text-secondary-text">
                             No artists added yet.

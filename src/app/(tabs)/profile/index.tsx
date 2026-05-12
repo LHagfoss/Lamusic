@@ -5,6 +5,8 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { AppText, SettingsGroup, SettingsItem } from "@/src/components";
 import { useAuth } from "@/src/hooks/useAuth";
+import { usePlayerStore } from "@/src/lib/playerStore";
+import { useThemeStore } from "@/src/lib/themeStore";
 
 export default function ProfileScreen() {
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
@@ -13,6 +15,9 @@ export default function ProfileScreen() {
 
     const { user, signOut } = useAuth();
     const router = useRouter();
+    const clearQueue = usePlayerStore((s) => s.clearQueue);
+    const isDark = useThemeStore((s) => s.isDark);
+    const toggleTheme = useThemeStore((s) => s.toggle);
 
     const fullName = user?.user_metadata?.full_name || "User";
     const initials = fullName
@@ -23,6 +28,7 @@ export default function ProfileScreen() {
 
     const handleLogOut = async () => {
         try {
+            await clearQueue();
             await signOut();
         } catch (error) {
             console.error("Failed to sign out:", error);
@@ -93,6 +99,20 @@ export default function ProfileScreen() {
                     </PressableOpacity>
                 </SettingsGroup>
             </View>
+
+            <SettingsGroup title="Appearance">
+                <SettingsItem
+                    label="Dark Mode"
+                    icon="moon.fill"
+                    iconBgColor="#1C1C3A"
+                    showChevron={false}
+                    isLast
+                    toggle={{
+                        value: isDark,
+                        onValueChange: toggleTheme,
+                    }}
+                />
+            </SettingsGroup>
 
             <SettingsGroup title="Audio">
                 <SettingsItem

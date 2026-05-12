@@ -2,14 +2,18 @@ import { GlassContainer, GlassView } from "expo-glass-effect";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { useState } from "react";
-import { ActivityIndicator, Pressable, View, Modal, FlatList } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    FlatList,
+    Modal,
+    Pressable,
+    View,
+} from "react-native";
 import TrackPlayer, { RepeatMode } from "react-native-track-player";
 import { useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
 import { usePlayerStore } from "@/src/lib/playerStore";
-import { AppButton } from "../components";
 import { LiquidSlider } from "../components/LiquidSlider";
 import { useMusic } from "../hooks/useMusic";
 
@@ -25,6 +29,8 @@ export default function PlayerScreen() {
     const duration = usePlayerStore((s) => s.duration);
     const seekTo = usePlayerStore((s) => s.seekTo);
     const removeFromQueue = usePlayerStore((s) => s.removeFromQueue);
+    const clearQueue = usePlayerStore((s) => s.clearQueue);
+    const skipToIndex = usePlayerStore((s) => s.skipToIndex);
     const repeatMode = usePlayerStore((s) => s.repeatMode);
     const toggleRepeatMode = usePlayerStore((s) => s.toggleRepeatMode);
 
@@ -33,9 +39,14 @@ export default function PlayerScreen() {
     const { data: recentSongs } = useRecentSongs();
     const toggleFavoriteMutation = useToggleFavorite();
 
-    const [shuffleOn, setShuffleOn] = useState(false);
-    const [volume, setVolume] = useState(1);
     const [showQueue, setShowQueue] = useState(false);
+    const [volume, setVolume] = useState(1);
+
+    useEffect(() => {
+        TrackPlayer.getVolume()
+            .then(setVolume)
+            .catch(() => {});
+    }, []);
 
     const primaryText = String(useCSSVariable("--color-primary-text"));
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
@@ -78,7 +89,7 @@ export default function PlayerScreen() {
     const isRepeatActive = repeatMode !== RepeatMode.Off;
 
     return (
-        <View className="bg-background">
+        <View className="flex-1 bg-background">
             <View className="px-6 pt-6 pb-6">
                 <View
                     className="w-full bg-secondary rounded-2xl overflow-hidden items-center justify-center"
@@ -128,9 +139,9 @@ export default function PlayerScreen() {
                 >
                     <GlassView
                         style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 20,
+                            width: 48,
+                            height: 48,
+                            borderRadius: 48,
                             alignItems: "center",
                             justifyContent: "center",
                         }}
@@ -141,7 +152,7 @@ export default function PlayerScreen() {
                         ) : (
                             <SymbolView
                                 name={isLiked ? "heart.fill" : "heart"}
-                                size={20}
+                                size={24}
                                 tintColor={isLiked ? primary : secondaryText}
                             />
                         )}
@@ -150,7 +161,7 @@ export default function PlayerScreen() {
             </View>
 
             {/* Progress Bar with Liquid Slider */}
-            <View className="px-6 mb-4">
+            <View className="px-6">
                 <LiquidSlider
                     progress={progressRatio}
                     activeColor={primary}
@@ -178,9 +189,7 @@ export default function PlayerScreen() {
                         padding: 8,
                     }}
                 >
-                    <Pressable
-                        onPress={() => skipToPrevious()}
-                    >
+                    <Pressable onPress={() => skipToPrevious()}>
                         <GlassView
                             style={{
                                 width: 56,
@@ -202,9 +211,9 @@ export default function PlayerScreen() {
                     <Pressable onPress={togglePlay}>
                         <GlassView
                             style={{
-                                width: 72,
-                                height: 72,
-                                borderRadius: 36,
+                                width: 86,
+                                height: 86,
+                                borderRadius: 86,
                                 alignItems: "center",
                                 justifyContent: "center",
                             }}
@@ -212,7 +221,7 @@ export default function PlayerScreen() {
                         >
                             <SymbolView
                                 name={isPlaying ? "pause.fill" : "play.fill"}
-                                size={28}
+                                size={44}
                                 tintColor={primaryText}
                             />
                         </GlassView>
@@ -239,26 +248,26 @@ export default function PlayerScreen() {
                 </GlassContainer>
             </View>
 
-            {/* Volume Slider */}
-            <View className="px-6 mb-8 flex-row items-center gap-4">
+            {/* Volume */}
+            <View className="px-6 mb-6 flex-row items-center gap-3">
                 <SymbolView
                     name="speaker.fill"
-                    size={14}
+                    size={16}
                     tintColor={secondaryText}
                 />
                 <View className="flex-1">
                     <LiquidSlider
                         progress={volume}
                         activeColor={secondaryText}
-                        onValueChange={(val) => {
-                            setVolume(val);
-                            TrackPlayer.setVolume(val);
+                        onSlidingComplete={(v) => {
+                            setVolume(v);
+                            TrackPlayer.setVolume(v).catch(() => {});
                         }}
                     />
                 </View>
                 <SymbolView
                     name="speaker.wave.3.fill"
-                    size={22}
+                    size={16}
                     tintColor={secondaryText}
                 />
             </View>
@@ -266,25 +275,25 @@ export default function PlayerScreen() {
             <View className="px-6 flex-row items-center justify-between">
                 <Pressable
                     className="items-center gap-1"
-                    onPress={() => setShuffleOn((v) => !v)}
+                    onPress={toggleRepeatMode}
                 >
                     <View
                         style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 8,
+                            width: 44,
+                            height: 44,
+                            borderRadius: 22,
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: shuffleOn
-                                ? foreground
+                            backgroundColor: isRepeatActive
+                                ? primaryText
                                 : "transparent",
                         }}
                     >
                         <SymbolView
-                            name="shuffle"
-                            size={20}
+                            name={getRepeatIcon()}
+                            size={22}
                             tintColor={
-                                shuffleOn ? onPrimaryText : secondaryText
+                                isRepeatActive ? onPrimaryText : secondaryText
                             }
                         />
                     </View>
@@ -292,77 +301,31 @@ export default function PlayerScreen() {
                         className="text-secondary-text"
                         style={{ fontSize: 10 }}
                     >
-                        Shuffle
+                        {repeatMode === RepeatMode.Track
+                            ? "Repeat 1"
+                            : "Repeat"}
                     </AppText>
                 </Pressable>
 
                 <Pressable
                     className="items-center gap-1"
-                    onPress={toggleRepeatMode}
+                    onPress={() => setShowQueue(true)}
                 >
                     <View
                         style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 8,
+                            width: 44,
+                            height: 44,
+                            borderRadius: 22,
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: isRepeatActive
-                                ? foreground
-                                : "transparent",
                         }}
                     >
                         <SymbolView
-                            name={getRepeatIcon()}
-                            size={20}
-                            tintColor={isRepeatActive ? onPrimaryText : secondaryText}
+                            name="list.bullet"
+                            size={22}
+                            tintColor={secondaryText}
                         />
                     </View>
-                    <AppText
-                        className="text-secondary-text"
-                        style={{ fontSize: 10 }}
-                    >
-                        {repeatMode === RepeatMode.Track ? "Repeat 1" : "Repeat"}
-                    </AppText>
-                </Pressable>
-
-                <Pressable className="items-center gap-1">
-                    <SymbolView
-                        name="quote.bubble"
-                        size={20}
-                        tintColor={secondaryText}
-                    />
-                    <AppText
-                        className="text-secondary-text"
-                        style={{ fontSize: 10 }}
-                    >
-                        Lyrics
-                    </AppText>
-                </Pressable>
-
-                <Pressable className="items-center gap-1">
-                    <SymbolView
-                        name="airplayaudio"
-                        size={20}
-                        tintColor={secondaryText}
-                    />
-                    <AppText
-                        className="text-secondary-text"
-                        style={{ fontSize: 10 }}
-                    >
-                        AirPlay
-                    </AppText>
-                </Pressable>
-
-                <Pressable 
-                    className="items-center gap-1"
-                    onPress={() => setShowQueue(true)}
-                >
-                    <SymbolView
-                        name="list.bullet"
-                        size={20}
-                        tintColor={secondaryText}
-                    />
                     <AppText
                         className="text-secondary-text"
                         style={{ fontSize: 10 }}
@@ -378,54 +341,119 @@ export default function PlayerScreen() {
                 presentationStyle="pageSheet"
                 onRequestClose={() => setShowQueue(false)}
             >
-                <View className="flex-1 bg-background" style={{ paddingTop: 20 }}>
+                <View
+                    className="flex-1 bg-background"
+                    style={{ paddingTop: 20 }}
+                >
                     <View className="px-6 flex-row justify-between items-center mb-6">
                         <AppText className="text-2xl font-bold">Queue</AppText>
-                        <Pressable onPress={() => setShowQueue(false)}>
-                            <AppText className="text-primary font-medium">Done</AppText>
-                        </Pressable>
+                        <View className="flex-row gap-4 items-center">
+                            {queue.length > 0 && (
+                                <Pressable
+                                    onPress={() => {
+                                        clearQueue();
+                                        setShowQueue(false);
+                                    }}
+                                >
+                                    <AppText className="text-red-500 font-medium">
+                                        Clear
+                                    </AppText>
+                                </Pressable>
+                            )}
+                            <Pressable onPress={() => setShowQueue(false)}>
+                                <AppText className="text-primary font-medium">
+                                    Done
+                                </AppText>
+                            </Pressable>
+                        </View>
                     </View>
 
                     <FlatList
                         data={queue}
                         keyExtractor={(item, index) => `${item.id}-${index}`}
-                        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
+                        contentContainerStyle={{
+                            paddingHorizontal: 24,
+                            paddingBottom: 40,
+                        }}
                         renderItem={({ item, index }) => {
                             const isActive = index === currentIndex;
                             return (
-                                <View className="flex-row items-center py-3 border-b border-secondary/20">
-                                    <View className="w-12 h-12 rounded-lg bg-secondary overflow-hidden items-center justify-center mr-4">
-                                        {item.cover?.uri ? (
-                                            <Image source={{ uri: item.cover.uri }} className="w-full h-full" />
-                                        ) : (
-                                            <SymbolView name="music.note" size={20} tintColor={secondaryText} />
+                                <Pressable
+                                    onPress={() =>
+                                        !isActive && skipToIndex(index)
+                                    }
+                                    style={({ pressed }) => ({
+                                        opacity: pressed ? 0.7 : 1,
+                                    })}
+                                >
+                                    <View className="flex-row items-center py-3 border-b border-secondary/20">
+                                        <View className="w-12 h-12 rounded-lg bg-secondary overflow-hidden items-center justify-center mr-4">
+                                            {item.cover?.uri ? (
+                                                <Image
+                                                    source={{
+                                                        uri: item.cover.uri,
+                                                    }}
+                                                    style={{
+                                                        width: "100%",
+                                                        height: "100%",
+                                                    }}
+                                                    contentFit="cover"
+                                                />
+                                            ) : (
+                                                <SymbolView
+                                                    name="music.note"
+                                                    size={20}
+                                                    tintColor={secondaryText}
+                                                />
+                                            )}
+                                        </View>
+                                        <View className="flex-1">
+                                            <AppText
+                                                className={
+                                                    isActive
+                                                        ? "text-primary font-bold"
+                                                        : "text-primary-text font-medium"
+                                                }
+                                                numberOfLines={1}
+                                            >
+                                                {item.title}
+                                            </AppText>
+                                            <AppText
+                                                className="text-secondary-text text-sm"
+                                                numberOfLines={1}
+                                            >
+                                                {item.artist}
+                                            </AppText>
+                                        </View>
+                                        {!isActive && (
+                                            <Pressable
+                                                onPress={() =>
+                                                    removeFromQueue(index)
+                                                }
+                                            >
+                                                <SymbolView
+                                                    name="trash"
+                                                    size={18}
+                                                    tintColor="#FF3B30"
+                                                />
+                                            </Pressable>
+                                        )}
+                                        {isActive && isPlaying && (
+                                            <SymbolView
+                                                name="waveform"
+                                                size={18}
+                                                tintColor={primary}
+                                            />
                                         )}
                                     </View>
-                                    <View className="flex-1">
-                                        <AppText 
-                                            className={isActive ? "text-primary font-bold" : "text-primary-text font-medium"}
-                                            numberOfLines={1}
-                                        >
-                                            {item.title}
-                                        </AppText>
-                                        <AppText className="text-secondary-text text-sm" numberOfLines={1}>
-                                            {item.artist}
-                                        </AppText>
-                                    </View>
-                                    {!isActive && (
-                                        <Pressable onPress={() => removeFromQueue(index)}>
-                                            <SymbolView name="trash" size={18} tintColor="#FF3B30" />
-                                        </Pressable>
-                                    )}
-                                    {isActive && isPlaying && (
-                                        <SymbolView name="waveform" size={18} tintColor={primary} />
-                                    )}
-                                </View>
+                                </Pressable>
                             );
                         }}
                         ListEmptyComponent={() => (
                             <View className="items-center justify-center py-20">
-                                <AppText className="text-secondary-text">The queue is empty.</AppText>
+                                <AppText className="text-secondary-text">
+                                    The queue is empty.
+                                </AppText>
                             </View>
                         )}
                     />

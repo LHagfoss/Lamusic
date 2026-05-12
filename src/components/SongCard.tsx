@@ -12,6 +12,7 @@ export function SongCard({ item }: { item: any }) {
     const router = useRouter();
     const playTrack = usePlayerStore((s) => s.playTrack);
     const addToQueue = usePlayerStore((s) => s.addToQueue);
+    const playNext = usePlayerStore((s) => s.playNext);
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
 
     function handlePlay() {
@@ -27,6 +28,17 @@ export function SongCard({ item }: { item: any }) {
 
     function handleAddToQueue() {
         addToQueue({
+            id: item.id,
+            title: item.title,
+            artist: item.artists?.name,
+            cover: { uri: item.cover_url || item.albums?.cover_url },
+            url: item.audio_url,
+            duration: item.duration,
+        });
+    }
+
+    function handlePlayNext() {
+        playNext({
             id: item.id,
             title: item.title,
             artist: item.artists?.name,
@@ -92,8 +104,13 @@ export function SongCard({ item }: { item: any }) {
                         />
                         <Button
                             label="Add to Queue"
-                            systemImage="text.insert.append"
+                            systemImage="plus"
                             onPress={handleAddToQueue}
+                        />
+                        <Button
+                            label="Play Next"
+                            systemImage="forward.end.fill"
+                            onPress={handlePlayNext}
                         />
                         <Button
                             label="Save"

@@ -3,7 +3,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useEffect, useRef } from "react";
-import { Appearance, View, ActivityIndicator } from "react-native";
+
+import { Appearance } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import * as SplashScreen from "expo-splash-screen";
@@ -15,12 +16,15 @@ import TrackPlayer, {
     useProgress,
     useActiveTrack,
     State,
+    RepeatMode,
     AppKilledPlaybackBehavior,
     IOSCategory,
     IOSCategoryMode,
 } from "react-native-track-player";
 import { PlaybackService } from "../services/playbackService";
 import { usePlayerStore } from "../lib/playerStore";
+import { useThemeStore } from "../lib/themeStore";
+import { musicService } from "../services/musicService";
 import "../global.css";
 
 // Prevent the splash screen from auto-hiding
@@ -36,11 +40,19 @@ TrackPlayer.registerPlaybackService(() => PlaybackService);
  */
 function PlayerSync() {
     const { state } = usePlaybackState();
-    const { position, duration } = useProgress(500); // 500ms sync
+    const { position, duration } = useProgress(500);
     const track = useActiveTrack();
     const setPlaybackState = usePlayerStore(s => s.setPlaybackState);
     const setProgress = usePlayerStore(s => s.setProgress);
     const setCurrentTrack = usePlayerStore(s => s.setCurrentTrack);
+    const repeatMode = usePlayerStore(s => s.repeatMode);
+    const listenedSeconds = usePlayerStore(s => s.listenedSeconds);
+    const hasCountedThisPlay = usePlayerStore(s => s.hasCountedThisPlay);
+    const addListenedSeconds = usePlayerStore(s => s.addListenedSeconds);
+    const markPlayCounted = usePlayerStore(s => s.markPlayCounted);
+    const resetListenProgress = usePlayerStore(s => s.resetListenProgress);
+    const didLoopRef = useRef(false);
+    const prevPositionRef = useRef(0);
 
     useEffect(() => {
         if (state) setPlaybackState(state as any);
@@ -51,10 +63,46 @@ function PlayerSync() {
     }, [position, duration]);
 
     useEffect(() => {
-        if (track?.id) {
-            setCurrentTrack(track.id);
-        }
+        if (track?.id) setCurrentTrack(track.id);
     }, [track?.id]);
+
+    // Accumulate real listened time — ignore seeks (delta > 2s or negative)
+    useEffect(() => {
+        const delta = position - prevPositionRef.current;
+        prevPositionRef.current = position;
+        if (!hasCountedThisPlay && delta > 0 && delta < 2) {
+            addListenedSeconds(delta);
+        }
+    }, [position]);
+
+    // Check listen threshold: min(30s, 50% of duration)
+    useEffect(() => {
+        if (hasCountedThisPlay || duration === 0 || listenedSeconds === 0) return;
+        const threshold = Math.min(30, duration * 0.5);
+        if (listenedSeconds >= threshold && track?.id) {
+            markPlayCounted();
+            musicService.incrementPlayCount(track.id).catch(console.error);
+        }
+    }, [listenedSeconds, duration, hasCountedThisPlay, track?.id]);
+
+    // Reset listen progress when track changes
+    useEffect(() => {
+        prevPositionRef.current = 0;
+        resetListenProgress();
+    }, [track?.id]);
+
+    // Position-based repeat fallback — catches cases PlaybackQueueEnded misses
+    useEffect(() => {
+        if (repeatMode === RepeatMode.Off || duration === 0 || position === 0) {
+            didLoopRef.current = false;
+            return;
+        }
+        if (position / duration >= 0.98 && !didLoopRef.current) {
+            didLoopRef.current = true;
+            TrackPlayer.seekTo(0).then(() => TrackPlayer.play());
+            setTimeout(() => { didLoopRef.current = false; }, 2000);
+        }
+    }, [position, duration, repeatMode]);
 
     return null;
 }
@@ -108,8 +156,6 @@ function NavigationLogic({ children }: { children: React.ReactNode }) {
     const { session, initialized } = useAuthStore();
     const segments = useSegments();
     const router = useRouter();
-    const lastTargetRef = useRef<string | null>(null);
-    const isNavigatingRef = useRef(false);
 
     useEffect(() => {
         setupPlayer();
@@ -117,54 +163,24 @@ function NavigationLogic({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!initialized) return;
-        
         SplashScreen.hideAsync();
 
         const inAuthGroup = segments[0] === "login";
         const isIndex = segments.length === 0 || segments[0] === "index";
 
-        console.log(`[Nav Check] Session: ${!!session}, inAuth: ${inAuthGroup}, isIndex: ${isIndex}, Segments: ${segments}`);
+        // index.tsx handles initial routing — only intervene mid-session
+        if (isIndex) return;
 
-        let targetRoute: string | null = null;
-
-        if (!session) {
-            if (!inAuthGroup) {
-                targetRoute = "/login";
-            }
-        } else {
-            if (inAuthGroup || isIndex) {
-                targetRoute = "/(tabs)/library";
-            }
+        // Logged-out user on protected route → kick to login
+        if (!session && !inAuthGroup) {
+            router.replace("/login");
         }
 
-        if (targetRoute) {
-            const currentPath = `/${segments.join("/")}`.replace(/\(|\)/g, "").replace(/^\/+/, "/").replace(/\/+$/, "");
-            const cleanTarget = targetRoute.replace(/\(|\)/g, "").replace(/^\/+/, "/").replace(/\/+$/, "");
-            
-            const isAlreadyThere = currentPath === cleanTarget || (currentPath === "" && cleanTarget === "index");
-
-            if (!isAlreadyThere && targetRoute !== lastTargetRef.current) {
-                console.log(`[Nav] Executing: ${currentPath} -> ${targetRoute}`);
-                lastTargetRef.current = targetRoute;
-                
-                // Small delay to ensure navigation container is ready
-                const timer = setTimeout(() => {
-                    router.replace(targetRoute as any);
-                }, 1);
-                return () => clearTimeout(timer);
-            }
-        } else {
-            lastTargetRef.current = null;
+        // Logged-in user somehow on login → send to library
+        if (session && inAuthGroup) {
+            router.replace("/(tabs)/library");
         }
     }, [session, initialized, segments]);
-
-    if (!initialized) {
-        return (
-            <View className="flex-1 items-center justify-center bg-background">
-                <ActivityIndicator size="large" color="#007AFF" />
-            </View>
-        );
-    }
 
     return <>{children}</>;
 }
@@ -218,9 +234,15 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
-export default function RootLayout() {
-    Appearance.setColorScheme("light");
+function ThemeApplier() {
+    const isDark = useThemeStore((s) => s.isDark);
+    useEffect(() => {
+        Appearance.setColorScheme(isDark ? "dark" : "light");
+    }, [isDark]);
+    return null;
+}
 
+export default function RootLayout() {
     return (
         <GestureHandlerRootView>
             <SafeAreaProvider>
@@ -228,6 +250,7 @@ export default function RootLayout() {
                     <QueryClientProvider client={queryClient}>
                         <AuthWrapper>
                             <NavigationLogic>
+                                <ThemeApplier />
                                 <PlayerSync />
                                 <Stack screenOptions={{ headerShown: false }}>
                                     <Stack.Screen name="index" options={{ headerShown: false }} />

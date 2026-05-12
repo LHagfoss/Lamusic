@@ -7,4 +7,5 @@ config.resolver.resolverMainFields = ["react-native", "browser", "main"];
 
 module.exports = withUniwindConfig(config, {
     cssEntryFile: "./src/global.css",
+    dtsFile: "./src/uniwind-types.d.ts",
 });

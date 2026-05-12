@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { SymbolView } from "expo-symbols";
-import { Pressable, View } from "react-native";
+import { ActionSheetIOS, Pressable, View } from "react-native";
 import { AppText } from "./AppText";
 
 type SavedItem = any;
@@ -9,11 +9,17 @@ function formatDuration(s: number) {
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
+interface QueueActions {
+    onPlayNext: () => void;
+    onAddToQueue: () => void;
+}
+
 interface SavedRowProps {
     item: SavedItem;
     secondaryText: string;
     type: "Songs" | "Albums" | "Artists";
     onPress?: () => void;
+    queueActions?: QueueActions;
 }
 
 export function SavedRow({
@@ -21,6 +27,7 @@ export function SavedRow({
     secondaryText,
     type,
     onPress,
+    queueActions,
 }: SavedRowProps) {
     const isSong = type === "Songs";
     const isAlbum = type === "Albums";
@@ -36,13 +43,23 @@ export function SavedRow({
     let subtext = "";
     if (isSong) subtext = item.artists?.name || "";
     if (isAlbum)
-        subtext = `${item.artists?.name || ""} · ${
-            item.songs?.length || 0
-        } songs`;
+        subtext = `${item.artists?.name || ""} · ${item.songs?.length || 0} songs`;
     if (isArtist)
-        subtext = `${item.albums?.length || 0} ${
-            item.albums?.length === 1 ? "album" : "albums"
-        }`;
+        subtext = `${item.albums?.length || 0} ${item.albums?.length === 1 ? "album" : "albums"}`;
+
+    function handleMorePress() {
+        if (!queueActions) return;
+        ActionSheetIOS.showActionSheetWithOptions(
+            {
+                options: ["Cancel", "Play Next", "Add to Queue"],
+                cancelButtonIndex: 0,
+            },
+            (index) => {
+                if (index === 1) queueActions.onPlayNext();
+                if (index === 2) queueActions.onAddToQueue();
+            },
+        );
+    }
 
     return (
         <Pressable
@@ -55,9 +72,7 @@ export function SavedRow({
                 backgroundColor: pressed ? "rgba(0,0,0,0.05)" : "transparent",
             })}
         >
-            <View
-                style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
-            >
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
                 <View
                     style={{
                         width: 48,
@@ -72,10 +87,7 @@ export function SavedRow({
                     {cover ? (
                         <Image
                             source={{ uri: cover }}
-                            style={{
-                                width: "100%",
-                                height: "100%",
-                            }}
+                            style={{ width: "100%", height: "100%" }}
                             contentFit="cover"
                         />
                     ) : (
@@ -87,16 +99,10 @@ export function SavedRow({
                     )}
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
-                    <AppText
-                        className="text-primary-text font-medium"
-                        numberOfLines={1}
-                    >
+                    <AppText className="text-primary-text font-medium" numberOfLines={1}>
                         {title}
                     </AppText>
-                    <AppText
-                        className="text-secondary-text text-sm"
-                        numberOfLines={1}
-                    >
+                    <AppText className="text-secondary-text text-sm" numberOfLines={1}>
                         {subtext}
                     </AppText>
                 </View>
@@ -105,6 +111,16 @@ export function SavedRow({
                     <AppText className="text-secondary-text text-sm">
                         {formatDuration(item.duration || 0)}
                     </AppText>
+                )}
+
+                {queueActions && isSong && (
+                    <Pressable
+                        onPress={handleMorePress}
+                        hitSlop={8}
+                        style={{ marginLeft: 12 }}
+                    >
+                        <SymbolView name="ellipsis" size={16} tintColor={secondaryText} />
+                    </Pressable>
                 )}
             </View>
         </Pressable>

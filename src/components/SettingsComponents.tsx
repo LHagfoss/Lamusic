@@ -1,7 +1,7 @@
 import { GlassView } from "expo-glass-effect";
 import { SymbolView, type SymbolViewProps } from "expo-symbols";
 import { PressableOpacity } from "pressto";
-import { View } from "react-native";
+import { Switch, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { AppText } from "./AppText";
 
@@ -13,6 +13,10 @@ interface SettingsItemProps {
     showChevron?: boolean;
     onPress?: () => void;
     isLast?: boolean;
+    toggle?: {
+        value: boolean;
+        onValueChange: (value: boolean) => void;
+    };
 }
 
 export function SettingsItem({
@@ -23,12 +27,16 @@ export function SettingsItem({
     showChevron = true,
     onPress,
     isLast = false,
+    toggle,
 }: SettingsItemProps) {
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
     const border = String(useCSSVariable("--color-border"));
+    const primary = String(useCSSVariable("--color-primary"));
+
+    const hasToggle = !!toggle;
 
     return (
-        <PressableOpacity onPress={onPress}>
+        <PressableOpacity onPress={hasToggle ? undefined : onPress} disabled={hasToggle && !onPress}>
             <View className="flex-row items-center pl-4">
                 {icon && (
                     <View
@@ -46,7 +54,7 @@ export function SettingsItem({
                     </View>
                 )}
                 <View
-                    className="flex-1 flex-row items-center pr-4 py-4"
+                    className="flex-1 flex-row items-center pr-4 py-3"
                     style={{
                         borderBottomWidth: isLast ? 0 : 0.5,
                         borderBottomColor: border,
@@ -55,18 +63,29 @@ export function SettingsItem({
                     <AppText className="text-primary-text flex-1" size="md">
                         {label}
                     </AppText>
-                    {value && (
-                        <AppText className="text-secondary-text mr-2" size="sm">
-                            {value}
-                        </AppText>
-                    )}
-                    {showChevron && (
-                        <SymbolView
-                            name="chevron.right"
-                            size={14}
-                            tintColor={secondaryText}
-                            weight="semibold"
+                    {hasToggle ? (
+                        <Switch
+                            value={toggle.value}
+                            onValueChange={toggle.onValueChange}
+                            trackColor={{ false: secondaryText, true: primary }}
+                            thumbColor="#ffffff"
                         />
+                    ) : (
+                        <>
+                            {value && (
+                                <AppText className="text-secondary-text mr-2" size="sm">
+                                    {value}
+                                </AppText>
+                            )}
+                            {showChevron && (
+                                <SymbolView
+                                    name="chevron.right"
+                                    size={14}
+                                    tintColor={secondaryText}
+                                    weight="semibold"
+                                />
+                            )}
+                        </>
                     )}
                 </View>
             </View>
