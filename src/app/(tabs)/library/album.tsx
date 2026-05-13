@@ -1,10 +1,11 @@
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, ScrollView, View, ActivityIndicator } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SymbolView } from "expo-symbols";
 import { useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
+import { AlbumPageSkeleton } from "@/src/components/Skeleton";
 import { useMusic } from "@/src/hooks/useMusic";
 import { usePlayerStore } from "@/src/lib/playerStore";
 import { formatPlayCount } from "@/src/utils";
@@ -46,11 +47,7 @@ export default function AlbumScreen() {
     };
 
     if (isLoading) {
-        return (
-            <View className="flex-1 items-center justify-center">
-                <ActivityIndicator size="large" />
-            </View>
-        );
+        return <AlbumPageSkeleton />;
     }
 
     if (!album || !artist) {

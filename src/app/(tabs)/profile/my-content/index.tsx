@@ -2,7 +2,6 @@ import { LegendList } from "@legendapp/list";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
 import {
-    ActivityIndicator,
     ScrollView,
     useWindowDimensions,
     View,
@@ -18,6 +17,7 @@ import { useCSSVariable } from "uniwind";
 import {
     AppDivider,
     AppText,
+    ListPageSkeleton,
     SavedRow,
     SegmentedControl,
 } from "@/src/components";
@@ -123,11 +123,7 @@ export default function MyContentScreen() {
     };
 
     if (isLoading) {
-        return (
-            <View className="flex-1 items-center justify-center bg-background">
-                <ActivityIndicator size="large" />
-            </View>
-        );
+        return <ListPageSkeleton rows={10} />;
     }
 
     return (

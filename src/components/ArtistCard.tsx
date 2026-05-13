@@ -115,7 +115,7 @@ export function ArtistCard({ item }: { item: any }) {
 
             <Link.Menu>
                 <Link.MenuAction title="Open" icon="arrow.up.right" />
-                <Link.MenuAction title="Follow" icon="person.badge.plus" />
+                {/*<Link.MenuAction title="Follow" icon="person.badge.plus" />*/}
                 <Link.MenuAction title="Share" icon="square.and.arrow.up" />
             </Link.Menu>
         </Link>

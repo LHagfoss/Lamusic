@@ -34,6 +34,8 @@ export default function ArtistScreen() {
     const backgroundColor = String(useCSSVariable("--color-background"));
 
     const playQueue = usePlayerStore((s) => s.playQueue);
+    const playTrack = usePlayerStore((s) => s.playTrack);
+    const addToQueue = usePlayerStore((s) => s.addToQueue);
 
     const artist = library?.find((a) => a.name === name);
     const isLiked = artist?.is_favorite ?? false;
@@ -151,7 +153,7 @@ export default function ArtistScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerClassName="pb-safe p-4"
             >
-                <View className="overflow-hidden rounded-3xl w-full aspect-3/2 bg-secondary items-center justify-center">
+                <View className="overflow-hidden rounded-xl w-full aspect-3/2 bg-secondary items-center justify-center">
                     {heroImage ? (
                         <Image
                             source={{ uri: heroImage }}
@@ -178,7 +180,7 @@ export default function ArtistScreen() {
                                     {formatPlayCount(totalPlays)} plays
                                 </AppText>
                             )}
-                            <AppButton title="Follow" />
+                            {/*<AppButton title="Follow" />*/}
                         </View>
 
                         <View className="flex-row items-center gap-3">
@@ -243,53 +245,87 @@ export default function ArtistScreen() {
                                     No songs added yet.
                                 </AppText>
                             )}
-                            {allTracks.map((track: any) => (
-                                <Pressable
-                                    key={track.id}
-                                    onPress={() => {
-                                        router.push({
-                                            pathname: "/library/song",
-                                            params: { id: track.id },
-                                        });
-                                    }}
-                                    style={{ width: 140 }}
-                                >
-                                    <View
-                                        className="w-full bg-secondary rounded-xl overflow-hidden items-center justify-center"
-                                        style={{ aspectRatio: 1 }}
-                                    >
-                                        {track.cover_url ||
-                                        track.albumCoverUrl ? (
-                                            <Image
-                                                source={{
-                                                    uri:
-                                                        track.cover_url ||
-                                                        track.albumCoverUrl,
-                                                }}
-                                                style={{
-                                                    width: "100%",
-                                                    height: "100%",
-                                                }}
-                                            />
-                                        ) : (
-                                            <SymbolView
-                                                name="music.note"
-                                                size={40}
-                                                tintColor={secondaryText}
-                                            />
-                                        )}
-                                    </View>
-                                    <AppText
-                                        className="text-primary-text font-medium mt-2 text-sm"
-                                        numberOfLines={1}
-                                    >
-                                        {track.title}
-                                    </AppText>
-                                    <AppText className="text-secondary-text text-xs">
-                                        Song
-                                    </AppText>
-                                </Pressable>
-                            ))}
+                            {allTracks.map((track: any) => {
+                                const trackArg = {
+                                    id: track.id,
+                                    title: track.title,
+                                    artist: artist.name,
+                                    cover: { uri: track.cover_url || track.albumCoverUrl },
+                                    url: track.audio_url,
+                                    duration: track.duration,
+                                };
+                                return (
+                                    <Host key={track.id} matchContents>
+                                        <ContextMenu>
+                                            <ContextMenu.Trigger>
+                                                <Pressable
+                                                    onPress={() => {
+                                                        router.push({
+                                                            pathname: "/library/song",
+                                                            params: { id: track.id },
+                                                        });
+                                                    }}
+                                                    style={{ width: 140 }}
+                                                >
+                                                    <View
+                                                        className="w-full bg-secondary rounded-xl overflow-hidden items-center justify-center"
+                                                        style={{ aspectRatio: 1 }}
+                                                    >
+                                                        {track.cover_url || track.albumCoverUrl ? (
+                                                            <Image
+                                                                source={{
+                                                                    uri: track.cover_url || track.albumCoverUrl,
+                                                                }}
+                                                                style={{ width: "100%", height: "100%" }}
+                                                            />
+                                                        ) : (
+                                                            <SymbolView
+                                                                name="music.note"
+                                                                size={40}
+                                                                tintColor={secondaryText}
+                                                            />
+                                                        )}
+                                                    </View>
+                                                    <AppText
+                                                        className="text-primary-text font-medium mt-2 text-sm"
+                                                        numberOfLines={1}
+                                                    >
+                                                        {track.title}
+                                                    </AppText>
+                                                    <AppText className="text-secondary-text text-xs">
+                                                        Song
+                                                    </AppText>
+                                                </Pressable>
+                                            </ContextMenu.Trigger>
+                                            <ContextMenu.Items>
+                                                <Button
+                                                    label="Play"
+                                                    systemImage="play.fill"
+                                                    onPress={() => {
+                                                        playTrack(trackArg);
+                                                        router.push("/player");
+                                                    }}
+                                                />
+                                                <Button
+                                                    label="Add to Queue"
+                                                    systemImage="text.badge.plus"
+                                                    onPress={() => addToQueue(trackArg)}
+                                                />
+                                                <Button
+                                                    label="View Song"
+                                                    systemImage="arrow.up.right"
+                                                    onPress={() =>
+                                                        router.push({
+                                                            pathname: "/library/song",
+                                                            params: { id: track.id },
+                                                        })
+                                                    }
+                                                />
+                                            </ContextMenu.Items>
+                                        </ContextMenu>
+                                    </Host>
+                                );
+                            })}
                         </ScrollView>
                     </View>
 

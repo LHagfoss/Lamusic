@@ -4,7 +4,6 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useEffect, useRef } from "react";
 
-import { Appearance } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import * as SplashScreen from "expo-splash-screen";
@@ -28,9 +27,6 @@ import { useThemeStore } from "../lib/themeStore";
 import { musicService } from "../services/musicService";
 import { useCSSVariable } from "uniwind";
 import "../global.css";
-
-// Apply saved theme synchronously before first render
-Appearance.setColorScheme(useThemeStore.getState().isDark ? "dark" : "light");
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -152,6 +148,7 @@ async function setupPlayer() {
             },
         });
         isPlayerInitialized = true;
+        await usePlayerStore.getState().restorePlayback();
     } catch (e) {
         if ((e as any).code === "player_already_initialized") {
             isPlayerInitialized = true;
@@ -259,9 +256,6 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 
 function ThemeApplier() {
     const isDark = useThemeStore((s) => s.isDark);
-    useEffect(() => {
-        Appearance.setColorScheme(isDark ? "dark" : "light");
-    }, [isDark]);
     return <StatusBar style={isDark ? "light" : "dark"} />;
 }
 

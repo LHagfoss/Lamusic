@@ -1,12 +1,8 @@
+import { Button, ContextMenu, Host } from "@expo/ui/swift-ui";
 import { LegendList } from "@legendapp/list";
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
-import {
-    ActivityIndicator,
-    ScrollView,
-    useWindowDimensions,
-    View,
-} from "react-native";
+import { ScrollView, useWindowDimensions, View } from "react-native";
 import Animated, {
     Easing,
     useAnimatedStyle,
@@ -17,6 +13,7 @@ import { useCSSVariable } from "uniwind";
 import {
     AppDivider,
     AppText,
+    RowSkeleton,
     SavedRow,
     SegmentedControl,
 } from "@/src/components";
@@ -29,6 +26,7 @@ export default function SearchScreen() {
     const { width } = useWindowDimensions();
     const router = useRouter();
     const playTrack = usePlayerStore((s) => s.playTrack);
+    const addToQueue = usePlayerStore((s) => s.addToQueue);
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
 
     const [query, setQuery] = useState("");
@@ -69,7 +67,7 @@ export default function SearchScreen() {
             id: item.id,
             title: item.title,
             artist: item.artists?.name,
-            cover: { uri: item.albums?.cover_url || item.cover_url },
+            cover: { uri: item.cover_url || item.albums?.cover_url },
             url: item.audio_url,
             duration: item.duration,
         });
@@ -90,7 +88,125 @@ export default function SearchScreen() {
         });
     }
 
+    function songTrackArg(item: any) {
+        return {
+            id: item.id,
+            title: item.title,
+            artist: item.artists?.name,
+            cover: { uri: item.cover_url || item.albums?.cover_url },
+            url: item.audio_url,
+            duration: item.duration,
+        };
+    }
+
     const showEmpty = !query.trim();
+
+    function SongRow({ item }: { item: any }) {
+        return (
+            <Host matchContents>
+                <ContextMenu>
+                    <ContextMenu.Trigger>
+                        <SavedRow
+                            item={item}
+                            secondaryText={secondaryText}
+                            type="Songs"
+                            onPress={() => handleSongPress(item)}
+                        />
+                    </ContextMenu.Trigger>
+                    <ContextMenu.Items>
+                        <Button
+                            label="Play"
+                            systemImage="play.fill"
+                            onPress={() => handleSongPress(item)}
+                        />
+                        <Button
+                            label="Add to Queue"
+                            systemImage="text.badge.plus"
+                            onPress={() => addToQueue(songTrackArg(item))}
+                        />
+                        <Button
+                            label="View Song"
+                            systemImage="arrow.up.right"
+                            onPress={() =>
+                                router.push({
+                                    pathname: "/library/song",
+                                    params: { id: item.id },
+                                })
+                            }
+                        />
+                        <Button
+                            label="View Artist"
+                            systemImage="person"
+                            onPress={() =>
+                                router.push({
+                                    pathname: "/library/artist",
+                                    params: { name: item.artists?.name },
+                                })
+                            }
+                        />
+                    </ContextMenu.Items>
+                </ContextMenu>
+            </Host>
+        );
+    }
+
+    function AlbumRow({ item }: { item: any }) {
+        return (
+            <Host matchContents>
+                <ContextMenu>
+                    <ContextMenu.Trigger>
+                        <SavedRow
+                            item={item}
+                            secondaryText={secondaryText}
+                            type="Albums"
+                            onPress={() => handleAlbumPress(item)}
+                        />
+                    </ContextMenu.Trigger>
+                    <ContextMenu.Items>
+                        <Button
+                            label="Open"
+                            systemImage="arrow.up.right"
+                            onPress={() => handleAlbumPress(item)}
+                        />
+                        <Button
+                            label="View Artist"
+                            systemImage="person"
+                            onPress={() =>
+                                router.push({
+                                    pathname: "/library/artist",
+                                    params: { name: item.artists?.name },
+                                })
+                            }
+                        />
+                    </ContextMenu.Items>
+                </ContextMenu>
+            </Host>
+        );
+    }
+
+    function ArtistRow({ item }: { item: any }) {
+        return (
+            <Host matchContents>
+                <ContextMenu>
+                    <ContextMenu.Trigger>
+                        <SavedRow
+                            item={item}
+                            secondaryText={secondaryText}
+                            type="Artists"
+                            onPress={() => handleArtistPress(item)}
+                        />
+                    </ContextMenu.Trigger>
+                    <ContextMenu.Items>
+                        <Button
+                            label="Open"
+                            systemImage="arrow.up.right"
+                            onPress={() => handleArtistPress(item)}
+                        />
+                    </ContextMenu.Items>
+                </ContextMenu>
+            </Host>
+        );
+    }
 
     return (
         <>
@@ -124,12 +240,7 @@ export default function SearchScreen() {
                         ) : (
                             recentSongs.map((item: any, i: number) => (
                                 <View key={item.id}>
-                                    <SavedRow
-                                        item={item}
-                                        secondaryText={secondaryText}
-                                        type="Songs"
-                                        onPress={() => handleSongPress(item)}
-                                    />
+                                    <SongRow item={item} />
                                     {i < recentSongs.length - 1 && (
                                         <AppDivider />
                                     )}
@@ -149,8 +260,10 @@ export default function SearchScreen() {
                         />
 
                         {isLoading && (
-                            <View className="items-center py-10">
-                                <ActivityIndicator size="large" />
+                            <View>
+                                {[0, 1, 2, 3, 4, 5].map((i) => (
+                                    <RowSkeleton key={i} delay={i * 50} />
+                                ))}
                             </View>
                         )}
 
@@ -171,14 +284,7 @@ export default function SearchScreen() {
                                             <AppDivider />
                                         )}
                                         renderItem={({ item }) => (
-                                            <SavedRow
-                                                item={item}
-                                                secondaryText={secondaryText}
-                                                type="Songs"
-                                                onPress={() =>
-                                                    handleSongPress(item)
-                                                }
-                                            />
+                                            <SongRow item={item} />
                                         )}
                                         ListEmptyComponent={() => (
                                             <View className="p-8 items-center">
@@ -200,14 +306,7 @@ export default function SearchScreen() {
                                             <AppDivider />
                                         )}
                                         renderItem={({ item }) => (
-                                            <SavedRow
-                                                item={item}
-                                                secondaryText={secondaryText}
-                                                type="Albums"
-                                                onPress={() =>
-                                                    handleAlbumPress(item)
-                                                }
-                                            />
+                                            <AlbumRow item={item} />
                                         )}
                                         ListEmptyComponent={() => (
                                             <View className="p-8 items-center">
@@ -229,14 +328,7 @@ export default function SearchScreen() {
                                             <AppDivider />
                                         )}
                                         renderItem={({ item }) => (
-                                            <SavedRow
-                                                item={item}
-                                                secondaryText={secondaryText}
-                                                type="Artists"
-                                                onPress={() =>
-                                                    handleArtistPress(item)
-                                                }
-                                            />
+                                            <ArtistRow item={item} />
                                         )}
                                         ListEmptyComponent={() => (
                                             <View className="p-8 items-center">

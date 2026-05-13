@@ -3,13 +3,12 @@ import { ArrowRight } from "lucide-react-native";
 import { PressableScale } from "pressto";
 import React from "react";
 import {
-    ActivityIndicator,
     RefreshControl,
     ScrollView,
     View,
 } from "react-native";
 import { useCSSVariable } from "uniwind";
-import { AppText, ArtistCard, GreetingCard, SongCard } from "@/src/components";
+import { AppText, ArtistCard, ArtistCardSkeleton, GreetingCard, SongCard, SongCardSkeleton } from "@/src/components";
 import { useMusic } from "@/src/hooks/useMusic";
 
 export default function HomeScreen() {
@@ -71,8 +70,10 @@ export default function HomeScreen() {
                 </View>
 
                 {loadingSongs ? (
-                    <View className="p-4 items-center justify-center">
-                        <ActivityIndicator color={primaryColor} />
+                    <View style={{ flexDirection: "row", gap: 12, paddingHorizontal: 16 }}>
+                        {[0, 1, 2, 3].map((i) => (
+                            <SongCardSkeleton key={i} delay={i * 80} />
+                        ))}
                     </View>
                 ) : !recentSongs || recentSongs.length === 0 ? (
                     <View className="p-4">
@@ -102,8 +103,10 @@ export default function HomeScreen() {
                 </View>
 
                 {loadingArtists ? (
-                    <View className="p-4 items-center justify-center">
-                        <ActivityIndicator color={primaryColor} />
+                    <View style={{ flexDirection: "row", gap: 16, paddingHorizontal: 16 }}>
+                        {[0, 1, 2, 3].map((i) => (
+                            <ArtistCardSkeleton key={i} delay={i * 80} />
+                        ))}
                     </View>
                 ) : !artists || artists.length === 0 ? (
                     <View className="p-4">

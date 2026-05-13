@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { useCSSVariable } from "uniwind";
 
-export default function LibraryLayout() {
+export default function UploadLayout() {
     const primaryTextColor = String(useCSSVariable("--color-primary-text"));
     const backgroundColor = String(useCSSVariable("--color-background"));
 
@@ -17,56 +17,51 @@ export default function LibraryLayout() {
             <Stack.Screen
                 name="index"
                 options={{
-                    title: "Library",
+                    title: "Upload",
                     headerLargeTitle: true,
                     headerLargeTitleStyle: { color: primaryTextColor },
                     contentStyle: { backgroundColor },
-                    unstable_headerRightItems: () => [
-                        {
-                            type: "button",
-                            label: "Saved",
-                            icon: { type: "sfSymbol", name: "bookmark" },
-                            onPress: () => {},
-                        },
-                        {
-                            type: "button",
-                            label: "Profile",
-                            icon: {
-                                type: "sfSymbol",
-                                name: "person.crop.circle",
-                            },
-                            onPress: () => {},
-                        },
-                    ],
                 }}
             />
-
-            <Stack.Screen
-                name="song"
-                options={{
-                    title: "",
-                    contentStyle: { backgroundColor },
-                }}
-            />
-
             <Stack.Screen
                 name="artist"
                 options={{
-                    title: "",
-                    headerLargeTitle: false,
+                    title: "Select Artist",
                     contentStyle: { backgroundColor },
                 }}
             />
-
             <Stack.Screen
                 name="album"
                 options={{
-                    title: "",
-                    headerLargeTitle: false,
+                    title: "Select Album",
                     contentStyle: { backgroundColor },
                 }}
             />
-
+            <Stack.Screen
+                name="review"
+                options={{
+                    title: "Review",
+                    contentStyle: { backgroundColor },
+                }}
+            />
+            <Stack.Screen
+                name="new-artist"
+                options={{
+                    title: "New Artist",
+                    presentation: "formSheet",
+                    sheetAllowedDetents: [0.8, 1.0],
+                    sheetGrabberVisible: true,
+                }}
+            />
+            <Stack.Screen
+                name="new-album"
+                options={{
+                    title: "New Album",
+                    presentation: "formSheet",
+                    sheetAllowedDetents: [0.8, 1.0],
+                    sheetGrabberVisible: true,
+                }}
+            />
         </Stack>
     );
 }

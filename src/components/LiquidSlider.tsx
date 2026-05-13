@@ -23,7 +23,7 @@ export function LiquidSlider({
     onValueChange,
     onSlidingStart,
     onSlidingComplete,
-    activeColor = "#007AFF",
+    activeColor = "#9b82ff",
 }: LiquidSliderProps) {
     const isDragging = useSharedValue(false);
     const containerWidth = useSharedValue(0);

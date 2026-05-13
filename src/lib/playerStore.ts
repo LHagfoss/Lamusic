@@ -40,6 +40,7 @@ interface PlayerStore {
     addListenedSeconds: (seconds: number) => void;
     markPlayCounted: () => void;
     resetListenProgress: () => void;
+    restorePlayback: () => Promise<void>;
 
     // State sync (internal)
     setPlaybackState: (state: State) => void;
@@ -278,11 +279,50 @@ export const usePlayerStore = create<PlayerStore>()(
             resetListenProgress: () => {
                 set({ listenedSeconds: 0, hasCountedThisPlay: false });
             },
+
+            restorePlayback: async () => {
+                const { queue, currentIndex, position, repeatMode } = get();
+                if (queue.length === 0 || currentIndex < 0) return;
+                try {
+                    const existing = await TrackPlayer.getQueue();
+                    if (existing.length > 0) return;
+
+                    const nativeTracks = queue.map((t) => ({
+                        id: t.id.toString(),
+                        url: t.url!,
+                        title: t.title,
+                        artist: t.artist,
+                        artwork: t.cover?.uri,
+                        duration: t.duration,
+                    }));
+
+                    await TrackPlayer.add(nativeTracks);
+                    await TrackPlayer.setRepeatMode(repeatMode);
+
+                    if (currentIndex > 0) {
+                        await TrackPlayer.skip(currentIndex);
+                    }
+                    if (position > 5) {
+                        await TrackPlayer.seekTo(position);
+                    }
+
+                    set({ isPlaying: false });
+                } catch (error) {
+                    console.error("Error restoring playback:", error);
+                }
+            },
         }),
         {
             name: "player-store",
             storage: createJSONStorage(() => AsyncStorage),
-            partialize: (state) => ({ repeatMode: state.repeatMode }),
+            partialize: (state) => ({
+                repeatMode: state.repeatMode,
+                currentTrack: state.currentTrack,
+                queue: state.queue,
+                currentIndex: state.currentIndex,
+                position: state.position,
+                duration: state.duration,
+            }),
         },
     ),
 );

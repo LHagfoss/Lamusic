@@ -3,12 +3,14 @@ import { z } from "zod";
 export const artistSchema = z.object({
     name: z.string().min(1, "Artist name is required").trim(),
     image_url: z.string().url().optional().nullable(),
+    primary_color: z.string().optional().nullable(),
 });
 
 export const albumSchema = z.object({
     title: z.string().min(1, "Album title is required").trim(),
     cover_url: z.string().url().optional().nullable(),
     artist_id: z.string().uuid("Invalid artist selection"),
+    primary_color: z.string().optional().nullable(),
 });
 
 export const songSchema = z.object({
@@ -18,6 +20,7 @@ export const songSchema = z.object({
     duration: z.number().optional(),
     artist_id: z.string().uuid("Invalid artist selection"),
     album_id: z.string().uuid("Invalid album selection"),
+    primary_color: z.string().optional().nullable(),
 });
 
 export type ArtistInput = z.infer<typeof artistSchema>;

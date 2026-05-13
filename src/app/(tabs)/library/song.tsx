@@ -3,9 +3,10 @@ import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
+import { SongPageSkeleton } from "@/src/components/Skeleton";
 import { useMusic } from "@/src/hooks/useMusic";
 import { usePlayerStore } from "@/src/lib/playerStore";
 import { formatPlayCount } from "@/src/utils";
@@ -80,11 +81,7 @@ export default function SongScreen() {
     }
 
     if (isLoading) {
-        return (
-            <View className="flex-1 items-center justify-center">
-                <ActivityIndicator size="large" />
-            </View>
-        );
+        return <SongPageSkeleton />;
     }
 
     if (!track) {

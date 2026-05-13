@@ -245,13 +245,16 @@ export default function TabLayout() {
             </NativeTabs.Trigger>
 
             <NativeTabs.Trigger
-                name="news"
+                name="upload"
                 contentStyle={{ backgroundColor: background }}
             >
-                <NativeTabs.Trigger.Label>News</NativeTabs.Trigger.Label>
+                <NativeTabs.Trigger.Label>Upload</NativeTabs.Trigger.Label>
                 <NativeTabs.Trigger.Icon
                     selectedColor={primary}
-                    sf={{ default: "bell", selected: "bell.fill" }}
+                    sf={{
+                        default: "arrow.up.circle",
+                        selected: "arrow.up.circle.fill",
+                    }}
                 />
             </NativeTabs.Trigger>
 

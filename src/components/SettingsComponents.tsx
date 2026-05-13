@@ -3,6 +3,7 @@ import { SymbolView, type SymbolViewProps } from "expo-symbols";
 import { PressableOpacity } from "pressto";
 import { Switch, View } from "react-native";
 import { useCSSVariable } from "uniwind";
+import { useThemeStore } from "@/src/lib/themeStore";
 import { AppText } from "./AppText";
 
 interface SettingsItemProps {
@@ -29,6 +30,7 @@ export function SettingsItem({
     isLast = false,
     toggle,
 }: SettingsItemProps) {
+    useThemeStore((s) => s.isDark);
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
     const border = String(useCSSVariable("--color-border"));
     const primary = String(useCSSVariable("--color-primary"));
@@ -94,6 +96,72 @@ export function SettingsItem({
                         </>
                     )}
                 </View>
+            </View>
+        </PressableOpacity>
+    );
+}
+
+interface ProfileItemProps {
+    name: string;
+    email: string;
+    initials: string;
+    onPress?: () => void;
+}
+
+export function ProfileItem({
+    name,
+    email,
+    initials,
+    onPress,
+}: ProfileItemProps) {
+    useThemeStore((s) => s.isDark);
+    const primaryText = String(useCSSVariable("--color-primary-text"));
+    const secondaryText = String(useCSSVariable("--color-secondary-text"));
+
+    return (
+        <PressableOpacity onPress={onPress}>
+            <View className="flex-row items-center p-4">
+                <View
+                    style={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: 30,
+                        backgroundColor: "#A7B5FF",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 16,
+                    }}
+                >
+                    <AppText
+                        style={{
+                            color: "#ffffff",
+                            fontSize: 24,
+                            fontWeight: "700",
+                        }}
+                    >
+                        {initials}
+                    </AppText>
+                </View>
+                <View style={{ flex: 1 }}>
+                    <AppText
+                        style={{
+                            color: primaryText,
+                            fontSize: 20,
+                            fontWeight: "600",
+                        }}
+                    >
+                        {name}
+                    </AppText>
+                    <AppText style={{ color: secondaryText, fontSize: 14 }}>
+                        {email}
+                    </AppText>
+                </View>
+                <SymbolView
+                    name="chevron.right"
+                    size={14}
+                    tintColor={secondaryText}
+                    weight="semibold"
+                />
             </View>
         </PressableOpacity>
     );

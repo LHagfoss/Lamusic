@@ -26,6 +26,13 @@ export default function ProfileLayout() {
                 }}
             />
             <Stack.Screen
+                name="appearance"
+                options={{
+                    title: "Appearance",
+                    headerLargeTitle: false,
+                }}
+            />
+            <Stack.Screen
                 name="my-content/index"
                 options={{
                     title: "My Content",

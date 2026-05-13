@@ -2,9 +2,7 @@ import { GlassView } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { View } from "react-native";
 import { useCSSVariable } from "uniwind";
-import { AppButton } from "./AppButton";
 import { AppText } from "./AppText";
-import { useRouter } from "expo-router";
 import { useAuth } from "@/src/hooks/useAuth";
 
 function greeting() {
@@ -15,7 +13,6 @@ function greeting() {
 }
 
 export function GreetingCard() {
-    const router = useRouter();
     const { user } = useAuth();
 
     const primaryColor = String(useCSSVariable("--color-primary"));
@@ -54,17 +51,8 @@ export function GreetingCard() {
                         {greeting()}, {firstName}
                     </AppText>
                     <AppText className="text-secondary-text text-sm">
-                        Upload a song you love
+                        What are you listening to today?
                     </AppText>
-                </View>
-
-                <View>
-                    <AppButton
-                        title="Upload"
-                        onPress={() =>
-                            router.navigate("/(tabs)/library/upload")
-                        }
-                    />
                 </View>
             </GlassView>
         </View>

@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase";
 import type { AlbumInput, ArtistInput, SongInput } from "../types/schemas";
+import { extractPrimaryColor } from "../utils/media";
 
 export const musicService = {
     // --- Artists ---
@@ -145,6 +146,31 @@ export const musicService = {
     async deleteSong(id: string) {
         const { error } = await supabase.from("songs").delete().eq("id", id);
         if (error) throw error;
+    },
+
+    async backfillColors(onProgress?: (done: number, total: number) => void) {
+        const [artists, albums, songs] = await Promise.all([
+            supabase.from("artists").select("id, image_url").is("primary_color", null),
+            supabase.from("albums").select("id, cover_url").is("primary_color", null),
+            supabase.from("songs").select("id, cover_url").is("primary_color", null),
+        ]);
+
+        const tasks: Array<{ table: string; id: string; uri: string }> = [
+            ...(artists.data ?? []).filter((r) => r.image_url).map((r) => ({ table: "artists", id: r.id, uri: r.image_url! })),
+            ...(albums.data ?? []).filter((r) => r.cover_url).map((r) => ({ table: "albums", id: r.id, uri: r.cover_url! })),
+            ...(songs.data ?? []).filter((r) => r.cover_url).map((r) => ({ table: "songs", id: r.id, uri: r.cover_url! })),
+        ];
+
+        let done = 0;
+        for (const task of tasks) {
+            const color = await extractPrimaryColor(task.uri);
+            if (color) {
+                await supabase.from(task.table as any).update({ primary_color: color }).eq("id", task.id);
+            }
+            done++;
+            onProgress?.(done, tasks.length);
+        }
+        return done;
     },
 
     async incrementPlayCount(songId: string) {

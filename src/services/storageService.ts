@@ -1,18 +1,19 @@
-import { supabase } from "../lib/supabase";
 import * as FileSystem from "expo-file-system/legacy";
 import { decode } from "base64-arraybuffer";
+import { supabase } from "../lib/supabase";
+import { compressImage, getAudioMime } from "../utils/media";
 
 export const storageService = {
     async uploadAudio(uri: string, fileName: string) {
         const path = `songs/${Date.now()}-${fileName}`;
-        // Using the 'storage' bucket as created by the user
-        return this.uploadFile("storage", path, uri, "audio/mpeg");
+        const mime = getAudioMime(fileName);
+        return this.uploadFile("storage", path, uri, mime);
     },
 
     async uploadImage(uri: string, fileName: string) {
-        const path = `covers/${Date.now()}-${fileName}`;
-        // Using the 'storage' bucket as created by the user
-        return this.uploadFile("storage", path, uri, "image/jpeg");
+        const compressed = await compressImage(uri);
+        const path = `covers/${Date.now()}-${fileName}.jpg`;
+        return this.uploadFile("storage", path, compressed, "image/jpeg");
     },
 
     async uploadFile(
@@ -22,7 +23,6 @@ export const storageService = {
         contentType: string,
     ) {
         try {
-            // In Expo 55+, the legacy API is required for readAsStringAsync
             const base64 = await FileSystem.readAsStringAsync(uri, {
                 encoding: FileSystem.EncodingType.Base64,
             });
