@@ -1,6 +1,6 @@
 import { Text, type TextProps } from "react-native";
-import { cn } from "@/src/lib/cn";
 import { fontSizes, fontWeights, textAligns } from "@/src/constants";
+import { cn } from "@/src/lib/cn";
 import type { UIAlign, UIFontSize, UIVariant, UIWeight } from "./types";
 
 export interface AppTextProps extends TextProps {
@@ -9,6 +9,7 @@ export interface AppTextProps extends TextProps {
     weight?: UIWeight;
     align?: UIAlign;
     className?: string;
+    upperCase?: boolean;
 }
 
 export function AppText({
@@ -19,15 +20,20 @@ export function AppText({
     align = "left",
     className,
     style,
+    upperCase = false,
     ...props
 }: Readonly<AppTextProps>) {
     const variants: Record<UIVariant, string> = {
-        primary: "text-foreground",
+        primary: "text-primary-text",
         secondary: "text-secondary-foreground",
         danger: "text-danger",
         success: "text-success",
         muted: "text-placeholder",
     };
+
+    if (upperCase) {
+        children = children?.toString().toUpperCase();
+    }
 
     return (
         <Text

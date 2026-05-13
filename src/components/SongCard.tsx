@@ -66,9 +66,13 @@ export function SongCard({ item }: { item: any }) {
                     <ContextMenu.Trigger>
                         <View style={{ width: 168 }}>
                             <Pressable onPress={handleOpen}>
-                                {(item.cover_url || item.albums?.cover_url) ? (
+                                {item.cover_url || item.albums?.cover_url ? (
                                     <Image
-                                        source={{ uri: item.cover_url || item.albums.cover_url }}
+                                        source={{
+                                            uri:
+                                                item.cover_url ||
+                                                item.albums.cover_url,
+                                        }}
                                         style={{
                                             width: "100%",
                                             aspectRatio: 1,

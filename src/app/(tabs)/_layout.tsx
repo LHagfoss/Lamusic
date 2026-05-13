@@ -8,8 +8,7 @@ import TrackPlayer from "react-native-track-player";
 import { Uniwind, useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
 import { usePlayerStore } from "@/src/lib/playerStore";
-
-Uniwind.setTheme('light')
+import { useThemeStore } from "@/src/lib/themeStore";
 
 interface AccessoryProps {
     isPaused: boolean;
@@ -194,11 +193,12 @@ export default function TabLayout() {
     const primary = String(useCSSVariable("--color-primary"));
     const background = String(useCSSVariable("--color-background"));
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
+    const isDark = useThemeStore((s) => s.isDark);
 
     return (
         <NativeTabs
             backgroundColor={background}
-            blurEffect="light"
+            blurEffect={isDark ? "dark" : "light"}
             labelStyle={{
                 default: {
                     color: secondaryText,

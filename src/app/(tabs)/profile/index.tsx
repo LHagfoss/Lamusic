@@ -37,7 +37,7 @@ export default function ProfileScreen() {
 
     return (
         <ScrollView
-            className="flex-1"
+            className="flex-1 bg-background"
             contentInsetAdjustmentBehavior="automatic"
             showsVerticalScrollIndicator={false}
         >
@@ -45,13 +45,21 @@ export default function ProfileScreen() {
                 options={{
                     title: "Settings",
                     headerRight: () => (
-                        <Pressable onPress={handleLogOut}>
+                        <Pressable
+                            onPress={handleLogOut}
+                            className="flex-row items-center gap-1 pl-2 pr-3"
+                            hitSlop={8}
+                        >
                             <SymbolView
                                 name="rectangle.portrait.and.arrow.right"
                                 size={24}
                                 tintColor={dangerText}
                                 weight="semibold"
                             />
+
+                            <AppText variant="danger" weight="medium">
+                                Log out
+                            </AppText>
                         </Pressable>
                     ),
                 }}

@@ -8,6 +8,7 @@ import { useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
 import { useMusic } from "@/src/hooks/useMusic";
 import { usePlayerStore } from "@/src/lib/playerStore";
+import { formatPlayCount } from "@/src/utils";
 
 export default function SongScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -98,6 +99,7 @@ export default function SongScreen() {
 
     return (
         <ScrollView
+            className="flex-1 bg-background"
             showsVerticalScrollIndicator={false}
             contentInsetAdjustmentBehavior="automatic"
         >
@@ -169,6 +171,11 @@ export default function SongScreen() {
                                     : ""}
                             </AppText>
                         </Pressable>
+                        {(track.play_count ?? 0) > 0 && (
+                            <AppText className="text-tertiary-text text-xs mt-1">
+                                {formatPlayCount(track.play_count)} plays
+                            </AppText>
+                        )}
                     </View>
 
                     <GlassContainer

@@ -15,7 +15,13 @@ interface ReviewStepProps {
     onBack: () => void;
 }
 
-export function ReviewStep({ file, title, artist, album, onBack }: ReviewStepProps) {
+export function ReviewStep({
+    file,
+    title,
+    artist,
+    album,
+    onBack,
+}: ReviewStepProps) {
     const { uploadAudio, useCreateSong } = useMusic();
     const createSongMutation = useCreateSong();
     const router = useRouter();
@@ -29,7 +35,7 @@ export function ReviewStep({ file, title, artist, album, onBack }: ReviewStepPro
         try {
             // 1. Upload audio to storage
             const audioUrl = await uploadAudio(file.uri, file.name);
-            
+
             // 2. Create song record in DB
             await createSongMutation.mutateAsync({
                 title,
@@ -51,18 +57,31 @@ export function ReviewStep({ file, title, artist, album, onBack }: ReviewStepPro
 
     return (
         <View className="flex-1 mt-4 px-4">
-            <AppText className="text-xl mb-6" weight="bold">Review & Upload</AppText>
+            <AppText className="text-xl mb-6" weight="bold">
+                Review & Upload
+            </AppText>
 
             <View className="items-center mb-8">
                 <View className="w-48 h-48 rounded-3xl bg-secondary overflow-hidden shadow-sm items-center justify-center">
                     {album.coverUrl ? (
-                        <Image source={{ uri: album.coverUrl }} className="w-full h-full" />
+                        <Image
+                            source={{ uri: album.coverUrl }}
+                            className="w-full h-full"
+                        />
                     ) : (
-                        <SymbolView name="music.note.list" size={60} tintColor={secondaryText} />
+                        <SymbolView
+                            name="music.note.list"
+                            size={60}
+                            tintColor={secondaryText}
+                        />
                     )}
                 </View>
-                <AppText className="text-2xl mt-4 text-center" weight="bold">{title}</AppText>
-                <AppText className="text-secondary-text text-lg">{artist.name}</AppText>
+                <AppText className="text-2xl mt-4 text-center" weight="bold">
+                    {title}
+                </AppText>
+                <AppText className="text-secondary-text text-lg">
+                    {artist.name}
+                </AppText>
             </View>
 
             <SettingsGroup title="Details">
@@ -72,19 +91,23 @@ export function ReviewStep({ file, title, artist, album, onBack }: ReviewStepPro
                 </View>
                 <View className="p-4 flex-row justify-between">
                     <AppText className="text-secondary-text">File Name</AppText>
-                    <AppText weight="medium" numberOfLines={1} className="flex-1 text-right ml-4">
+                    <AppText
+                        weight="medium"
+                        numberOfLines={1}
+                        className="flex-1 text-right ml-4"
+                    >
                         {file.name}
                     </AppText>
                 </View>
             </SettingsGroup>
 
             <View className="mt-auto mb-8 gap-y-3">
-                <AppButton 
-                    title={isUploading ? "Uploading..." : "Upload Track"} 
-                    fill 
+                <AppButton
+                    title={isUploading ? "Uploading..." : "Upload Track"}
+                    fill
                     disabled={isUploading}
                     loading={isUploading}
-                    onPress={handleUpload} 
+                    onPress={handleUpload}
                 />
                 {!isUploading && <AppButton title="Back" onPress={onBack} />}
             </View>

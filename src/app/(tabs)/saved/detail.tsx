@@ -22,7 +22,11 @@ export default function SavedDetailScreen() {
     }>();
     const { id, type, title, image, artistName, duration } = params;
     const router = useRouter();
-    const { useToggleFavorite, useToggleArtistFavorite, useToggleAlbumFavorite } = useMusic();
+    const {
+        useToggleFavorite,
+        useToggleArtistFavorite,
+        useToggleAlbumFavorite,
+    } = useMusic();
     const toggleFavorite = useToggleFavorite();
     const toggleArtistFavorite = useToggleArtistFavorite();
     const toggleAlbumFavorite = useToggleAlbumFavorite();
@@ -32,11 +36,20 @@ export default function SavedDetailScreen() {
     const handleUnfavorite = async () => {
         try {
             if (type === "Songs") {
-                await toggleFavorite.mutateAsync({ songId: id!, isFavorite: false });
+                await toggleFavorite.mutateAsync({
+                    songId: id!,
+                    isFavorite: false,
+                });
             } else if (type === "Artists") {
-                await toggleArtistFavorite.mutateAsync({ artistId: id!, isFavorite: false });
+                await toggleArtistFavorite.mutateAsync({
+                    artistId: id!,
+                    isFavorite: false,
+                });
             } else if (type === "Albums") {
-                await toggleAlbumFavorite.mutateAsync({ albumId: id!, isFavorite: false });
+                await toggleAlbumFavorite.mutateAsync({
+                    albumId: id!,
+                    isFavorite: false,
+                });
             }
             router.back();
         } catch (error) {
@@ -83,7 +96,11 @@ export default function SavedDetailScreen() {
                     ) : (
                         <View className="flex-1 items-center justify-center">
                             <SymbolView
-                                name={type === "Artists" ? "person.fill" : "music.note"}
+                                name={
+                                    type === "Artists"
+                                        ? "person.fill"
+                                        : "music.note"
+                                }
                                 size={64}
                                 tintColor="#D1D1D6"
                             />
@@ -111,7 +128,11 @@ export default function SavedDetailScreen() {
 
             {/* Buttons */}
             <View className="flex-row gap-3">
-                <Pressable className="flex-1" onPress={handleUnfavorite} disabled={isPending}>
+                <Pressable
+                    className="flex-1"
+                    onPress={handleUnfavorite}
+                    disabled={isPending}
+                >
                     <GlassView
                         style={{
                             height: 48,
@@ -128,8 +149,15 @@ export default function SavedDetailScreen() {
                             <ActivityIndicator size="small" color="#FF3B30" />
                         ) : (
                             <>
-                                <SymbolView name="heart.slash.fill" size={18} tintColor="#FF3B30" />
-                                <AppText className="font-semibold" style={{ color: "#FF3B30" }}>
+                                <SymbolView
+                                    name="heart.slash.fill"
+                                    size={18}
+                                    tintColor="#FF3B30"
+                                />
+                                <AppText
+                                    className="font-semibold"
+                                    style={{ color: "#FF3B30" }}
+                                >
                                     Unfavorite
                                 </AppText>
                             </>
@@ -148,7 +176,11 @@ export default function SavedDetailScreen() {
                         }}
                         isInteractive
                     >
-                        <SymbolView name="xmark" size={18} tintColor={secondaryText} />
+                        <SymbolView
+                            name="xmark"
+                            size={18}
+                            tintColor={secondaryText}
+                        />
                     </GlassView>
                 </Pressable>
             </View>

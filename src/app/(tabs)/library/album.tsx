@@ -7,6 +7,7 @@ import { useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
 import { useMusic } from "@/src/hooks/useMusic";
 import { usePlayerStore } from "@/src/lib/playerStore";
+import { formatPlayCount } from "@/src/utils";
 
 function formatDuration(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -15,7 +16,10 @@ function formatDuration(seconds: number) {
 }
 
 export default function AlbumScreen() {
-    const { albumId, artistName } = useLocalSearchParams<{ albumId: string; artistName: string }>();
+    const { albumId, artistName } = useLocalSearchParams<{
+        albumId: string;
+        artistName: string;
+    }>();
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const playTrack = usePlayerStore((s) => s.playTrack);
@@ -52,13 +56,16 @@ export default function AlbumScreen() {
     if (!album || !artist) {
         return (
             <View className="flex-1 items-center justify-center">
-                <AppText className="text-secondary-text">Album not found</AppText>
+                <AppText className="text-secondary-text">
+                    Album not found
+                </AppText>
             </View>
         );
     }
 
     return (
         <ScrollView
+            className="flex-1 bg-background"
             showsVerticalScrollIndicator={false}
             contentInsetAdjustmentBehavior="automatic"
         >
@@ -95,14 +102,21 @@ export default function AlbumScreen() {
 
             {/* Album Header */}
             <View className="items-center px-8 pt-4 pb-6">
-                <View className="w-56 bg-secondary rounded-2xl overflow-hidden mb-4 items-center justify-center" style={{ aspectRatio: 1 }}>
+                <View
+                    className="w-56 bg-secondary rounded-2xl overflow-hidden mb-4 items-center justify-center"
+                    style={{ aspectRatio: 1 }}
+                >
                     {album.cover_url ? (
                         <Image
                             source={{ uri: album.cover_url }}
                             style={{ width: "100%", height: "100%" }}
                         />
                     ) : (
-                        <SymbolView name="music.note.list" size={60} tintColor={secondaryText} />
+                        <SymbolView
+                            name="music.note.list"
+                            size={60}
+                            tintColor={secondaryText}
+                        />
                     )}
                 </View>
                 <AppText className="text-primary-text text-2xl font-bold text-center">
@@ -121,14 +135,25 @@ export default function AlbumScreen() {
                     </AppText>
                 </Pressable>
                 <AppText className="text-secondary-text text-sm mt-1">
-                    Album · {album.songs?.length || 0} songs
+                    {(() => {
+                        const totalPlays = (album.songs ?? []).reduce(
+                            (sum: number, s: any) => sum + (s.play_count ?? 0),
+                            0,
+                        );
+                        return `Album · ${album.songs?.length || 0} songs${totalPlays > 0 ? ` · ${formatPlayCount(totalPlays)} plays` : ""}`;
+                    })()}
                 </AppText>
             </View>
 
             {/* Track List */}
-            <View className="px-4 pb-8" style={{ paddingBottom: insets.bottom + 32 }}>
+            <View
+                className="px-4 pb-8"
+                style={{ paddingBottom: insets.bottom + 32 }}
+            >
                 {album.songs?.length === 0 && (
-                    <AppText className="text-secondary-text text-center mt-4">No songs in this album.</AppText>
+                    <AppText className="text-secondary-text text-center mt-4">
+                        No songs in this album.
+                    </AppText>
                 )}
                 {album.songs?.map((track: any, idx: number) => (
                     <Pressable
@@ -142,14 +167,20 @@ export default function AlbumScreen() {
                                 cover: { uri: album.cover_url },
                                 url: track.audio_url,
                             });
-                            router.push({ pathname: "/library/song", params: { id: track.id } });
+                            router.push({
+                                pathname: "/library/song",
+                                params: { id: track.id },
+                            });
                         }}
                     >
                         <AppText className="text-secondary-text w-7 text-sm text-right mr-4">
                             {idx + 1}
                         </AppText>
                         <View className="flex-1">
-                            <AppText className="text-primary-text font-medium" numberOfLines={1}>
+                            <AppText
+                                className="text-primary-text font-medium"
+                                numberOfLines={1}
+                            >
                                 {track.title}
                             </AppText>
                             <AppText className="text-secondary-text text-xs mt-0.5">

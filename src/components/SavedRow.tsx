@@ -38,7 +38,7 @@ export function SavedRow({
         ? item.image_url
         : isAlbum
           ? item.cover_url
-          : (item.cover_url || item.albums?.cover_url);
+          : item.cover_url || item.albums?.cover_url;
 
     let subtext = "";
     if (isSong) subtext = item.artists?.name || "";
@@ -72,7 +72,9 @@ export function SavedRow({
                 backgroundColor: pressed ? "rgba(0,0,0,0.05)" : "transparent",
             })}
         >
-            <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+            <View
+                style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
+            >
                 <View
                     style={{
                         width: 48,
@@ -99,10 +101,16 @@ export function SavedRow({
                     )}
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
-                    <AppText className="text-primary-text font-medium" numberOfLines={1}>
+                    <AppText
+                        className="text-primary-text font-medium"
+                        numberOfLines={1}
+                    >
                         {title}
                     </AppText>
-                    <AppText className="text-secondary-text text-sm" numberOfLines={1}>
+                    <AppText
+                        className="text-secondary-text text-sm"
+                        numberOfLines={1}
+                    >
                         {subtext}
                     </AppText>
                 </View>
@@ -119,7 +127,11 @@ export function SavedRow({
                         hitSlop={8}
                         style={{ marginLeft: 12 }}
                     >
-                        <SymbolView name="ellipsis" size={16} tintColor={secondaryText} />
+                        <SymbolView
+                            name="ellipsis"
+                            size={16}
+                            tintColor={secondaryText}
+                        />
                     </Pressable>
                 )}
             </View>

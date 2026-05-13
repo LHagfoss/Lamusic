@@ -8,8 +8,15 @@ import {
     FlatList,
     Modal,
     Pressable,
+    StyleSheet,
     View,
 } from "react-native";
+import Animated, {
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from "react-native-reanimated";
 import TrackPlayer, { RepeatMode } from "react-native-track-player";
 import { useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
@@ -47,6 +54,48 @@ export default function PlayerScreen() {
             .then(setVolume)
             .catch(() => {});
     }, []);
+
+    const coverScale = useSharedValue(1);
+    const overlayOpacity = useSharedValue(0);
+
+    useEffect(() => {
+        coverScale.value = withTiming(isPlaying ? 1 : 0.88, {
+            duration: 300,
+            easing: Easing.out(Easing.cubic),
+        });
+        overlayOpacity.value = withTiming(isPlaying ? 0 : 0.45, {
+            duration: 300,
+            easing: Easing.out(Easing.cubic),
+        });
+    }, [isPlaying]);
+
+    const coverAnimStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: coverScale.value }],
+    }));
+
+    const overlayAnimStyle = useAnimatedStyle(() => ({
+        opacity: overlayOpacity.value,
+    }));
+
+    const fadeTogglePlay = async () => {
+        const steps = 8;
+        const stepMs = 18;
+        if (isPlaying) {
+            for (let i = steps - 1; i >= 0; i--) {
+                await new Promise<void>((r) => setTimeout(r, stepMs));
+                TrackPlayer.setVolume((volume * i) / steps).catch(() => {});
+            }
+            togglePlay();
+            TrackPlayer.setVolume(volume).catch(() => {});
+        } else {
+            TrackPlayer.setVolume(0).catch(() => {});
+            togglePlay();
+            for (let i = 1; i <= steps; i++) {
+                await new Promise<void>((r) => setTimeout(r, stepMs));
+                TrackPlayer.setVolume((volume * i) / steps).catch(() => {});
+            }
+        }
+    };
 
     const primaryText = String(useCSSVariable("--color-primary-text"));
     const secondaryText = String(useCSSVariable("--color-secondary-text"));
@@ -92,21 +141,42 @@ export default function PlayerScreen() {
         <View className="flex-1 bg-background">
             <View className="px-6 pt-6 pb-6">
                 <View
-                    className="w-full bg-secondary rounded-2xl overflow-hidden items-center justify-center"
+                    className="w-full rounded-2xl items-center justify-center"
                     style={{ aspectRatio: 1 }}
                 >
-                    {track?.cover?.uri ? (
-                        <Image
-                            source={{ uri: track.cover.uri }}
-                            style={{ width: "100%", height: "100%" }}
+                    <Animated.View
+                        style={[
+                            StyleSheet.absoluteFill,
+                            { borderRadius: 16, overflow: "hidden" },
+                            coverAnimStyle,
+                        ]}
+                    >
+                        {track?.cover?.uri ? (
+                            <Image
+                                source={{ uri: track.cover.uri }}
+                                style={{ width: "100%", height: "100%" }}
+                            />
+                        ) : (
+                            <View className="flex-1 items-center justify-center">
+                                <SymbolView
+                                    name="music.note"
+                                    size={100}
+                                    tintColor={secondaryText}
+                                />
+                            </View>
+                        )}
+                        <Animated.View
+                            style={[
+                                StyleSheet.absoluteFill,
+                                {
+                                    backgroundColor: "#000000",
+                                    borderRadius: 16,
+                                },
+                                overlayAnimStyle,
+                            ]}
+                            pointerEvents="none"
                         />
-                    ) : (
-                        <SymbolView
-                            name="music.note"
-                            size={100}
-                            tintColor={secondaryText}
-                        />
-                    )}
+                    </Animated.View>
                 </View>
             </View>
 
@@ -208,7 +278,7 @@ export default function PlayerScreen() {
                         </GlassView>
                     </Pressable>
 
-                    <Pressable onPress={togglePlay}>
+                    <Pressable onPress={fadeTogglePlay}>
                         <GlassView
                             style={{
                                 width: 86,
@@ -285,7 +355,7 @@ export default function PlayerScreen() {
                             alignItems: "center",
                             justifyContent: "center",
                             backgroundColor: isRepeatActive
-                                ? primaryText
+                                ? primary
                                 : "transparent",
                         }}
                     >

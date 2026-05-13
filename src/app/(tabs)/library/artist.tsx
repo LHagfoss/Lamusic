@@ -15,6 +15,7 @@ import { AppButton } from "@/src/components";
 import { AppText } from "@/src/components/AppText";
 import { useMusic } from "@/src/hooks/useMusic";
 import { usePlayerStore } from "@/src/lib/playerStore";
+import { formatPlayCount } from "@/src/utils";
 
 export default function ArtistScreen() {
     const { name } = useLocalSearchParams<{ name: string }>();
@@ -75,6 +76,10 @@ export default function ArtistScreen() {
                 albumCoverUrl: al.cover_url,
             })),
         ) || [];
+    const totalPlays = allTracks.reduce(
+        (sum: number, t: any) => sum + (t.play_count ?? 0),
+        0,
+    );
 
     const handlePlayArtistPress = async () => {
         if (allTracks.length === 0) return;
@@ -141,6 +146,7 @@ export default function ArtistScreen() {
             )}
 
             <ScrollView
+                className="flex-1 bg-background"
                 contentInsetAdjustmentBehavior="automatic"
                 showsVerticalScrollIndicator={false}
                 contentContainerClassName="pb-safe p-4"
@@ -167,7 +173,11 @@ export default function ArtistScreen() {
                             <AppText className="text-3xl font-bold text-primary-text">
                                 {artist.name}
                             </AppText>
-
+                            {totalPlays > 0 && (
+                                <AppText className="text-secondary-text text-sm mt-0.5">
+                                    {formatPlayCount(totalPlays)} plays
+                                </AppText>
+                            )}
                             <AppButton title="Follow" />
                         </View>
 

@@ -69,10 +69,12 @@ export default function SavedScreen() {
         const initialAlbums =
             library.flatMap(
                 (a) =>
-                    a.albums?.filter((al: any) => al.is_favorite).map((al: any) => ({
-                        ...al,
-                        artists: { name: a.name },
-                    })) || [],
+                    a.albums
+                        ?.filter((al: any) => al.is_favorite)
+                        .map((al: any) => ({
+                            ...al,
+                            artists: { name: a.name },
+                        })) || [],
             ) || [];
         setAlbums(initialAlbums);
 
@@ -103,7 +105,7 @@ export default function SavedScreen() {
                         ? item.image_url
                         : type === "Albums"
                           ? item.cover_url
-                          : (item.cover_url || item.albums?.cover_url),
+                          : item.cover_url || item.albums?.cover_url,
                 artistName:
                     type === "Songs"
                         ? item.artists?.name
@@ -125,11 +127,15 @@ export default function SavedScreen() {
 
     return (
         <ScrollView
-            className=" bg-white"
+            className="flex-1 bg-background"
             showsVerticalScrollIndicator={false}
             contentInsetAdjustmentBehavior="automatic"
             refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor={primaryColor}
+                />
             }
         >
             <Stack.Screen options={{ headerRight: () => null }} />

@@ -59,7 +59,12 @@ export function GreetingCard() {
                 </View>
 
                 <View>
-                    <AppButton title="Upload" onPress={() => router.navigate("/(tabs)/library/upload")} />
+                    <AppButton
+                        title="Upload"
+                        onPress={() =>
+                            router.navigate("/(tabs)/library/upload")
+                        }
+                    />
                 </View>
             </GlassView>
         </View>

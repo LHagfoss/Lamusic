@@ -46,9 +46,12 @@ export default function ManageContentScreen() {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            if (type === "Songs") await deleteSong.mutateAsync(id!);
-                            else if (type === "Albums") await deleteAlbum.mutateAsync(id!);
-                            else if (type === "Artists") await deleteArtist.mutateAsync(id!);
+                            if (type === "Songs")
+                                await deleteSong.mutateAsync(id!);
+                            else if (type === "Albums")
+                                await deleteAlbum.mutateAsync(id!);
+                            else if (type === "Artists")
+                                await deleteArtist.mutateAsync(id!);
                             router.back();
                         } catch (e) {
                             console.error("Delete failed", e);
@@ -93,7 +96,11 @@ export default function ManageContentScreen() {
                     ) : (
                         <View className="flex-1 items-center justify-center">
                             <SymbolView
-                                name={type === "Artists" ? "person.fill" : "music.note"}
+                                name={
+                                    type === "Artists"
+                                        ? "person.fill"
+                                        : "music.note"
+                                }
                                 size={64}
                                 tintColor="#D1D1D6"
                             />
@@ -121,7 +128,11 @@ export default function ManageContentScreen() {
 
             {/* Buttons */}
             <View className="flex-row gap-3">
-                <Pressable className="flex-1" onPress={handleDelete} disabled={isPending}>
+                <Pressable
+                    className="flex-1"
+                    onPress={handleDelete}
+                    disabled={isPending}
+                >
                     <GlassView
                         style={{
                             height: 48,
@@ -138,8 +149,15 @@ export default function ManageContentScreen() {
                             <ActivityIndicator size="small" color="#FF3B30" />
                         ) : (
                             <>
-                                <SymbolView name="trash.fill" size={18} tintColor="#FF3B30" />
-                                <AppText className="font-semibold" style={{ color: "#FF3B30" }}>
+                                <SymbolView
+                                    name="trash.fill"
+                                    size={18}
+                                    tintColor="#FF3B30"
+                                />
+                                <AppText
+                                    className="font-semibold"
+                                    style={{ color: "#FF3B30" }}
+                                >
                                     Delete
                                 </AppText>
                             </>
@@ -165,7 +183,11 @@ export default function ManageContentScreen() {
                         }}
                         isInteractive
                     >
-                        <SymbolView name="pencil" size={18} tintColor={primaryColor} />
+                        <SymbolView
+                            name="pencil"
+                            size={18}
+                            tintColor={primaryColor}
+                        />
                     </GlassView>
                 </Pressable>
 
@@ -180,7 +202,11 @@ export default function ManageContentScreen() {
                         }}
                         isInteractive
                     >
-                        <SymbolView name="xmark" size={18} tintColor={secondaryText} />
+                        <SymbolView
+                            name="xmark"
+                            size={18}
+                            tintColor={secondaryText}
+                        />
                     </GlassView>
                 </Pressable>
             </View>

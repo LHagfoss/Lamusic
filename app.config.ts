@@ -9,7 +9,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     icon: "./assets/images/icon.png",
     scheme: "lamusic",
     backgroundColor: "#E6F4FE",
-    userInterfaceStyle: "light",
+    userInterfaceStyle: "automatic",
     ios: {
         icon: "./assets/music-icon.icon",
         bundleIdentifier: "com.lucas.lamusic",
@@ -25,8 +25,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         predictiveBackGestureEnabled: false,
         permissions: [
             "android.permission.FOREGROUND_SERVICE",
-            "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
-        ]
+            "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        ],
     },
     web: {
         output: "static",
@@ -53,14 +53,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         [
             "expo-build-properties",
             {
-                "ios": {
-                    "deploymentTarget": "15.1",
-                    "infoPlist": {
-                        "UIBackgroundModes": ["audio"]
-                    }
-                }
-            }
-        ]
+                ios: {
+                    deploymentTarget: "15.1",
+                    infoPlist: {
+                        UIBackgroundModes: ["audio"],
+                    },
+                },
+            },
+        ],
     ],
     experiments: {
         typedRoutes: true,

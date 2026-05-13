@@ -37,7 +37,7 @@ export function AlbumStep({
         ) || [];
 
     return (
-        <View className="flex-1">
+        <View className="flex-1 bg-background">
             <Stack.Screen
                 options={{
                     title: "Select Album",
@@ -59,9 +59,13 @@ export function AlbumStep({
                 </View>
             ) : isError ? (
                 <View className="flex-1 items-center justify-center p-8 bg-background">
-                    <AppText className="text-danger mb-4 text-center">Failed to load albums.</AppText>
+                    <AppText className="text-danger mb-4 text-center">
+                        Failed to load albums.
+                    </AppText>
                     <PressableOpacity onPress={() => refetch()}>
-                        <AppText className="text-primary font-bold">Retry</AppText>
+                        <AppText className="text-primary font-bold">
+                            Retry
+                        </AppText>
                     </PressableOpacity>
                 </View>
             ) : (
@@ -71,7 +75,9 @@ export function AlbumStep({
                     contentInsetAdjustmentBehavior="automatic"
                     ListHeaderComponent={() => (
                         <PressableOpacity
-                            onPress={() => router.push("/library/upload/new-album")}
+                            onPress={() =>
+                                router.push("/library/upload/new-album")
+                            }
                         >
                             <View
                                 className="flex-row items-center p-4 border-b-[0.5px]"
@@ -84,7 +90,10 @@ export function AlbumStep({
                                         tintColor={primaryText}
                                     />
                                 </View>
-                                <AppText className="text-base" weight="semibold">
+                                <AppText
+                                    className="text-base"
+                                    weight="semibold"
+                                >
                                     New Album
                                 </AppText>
                             </View>
@@ -108,7 +117,10 @@ export function AlbumStep({
                                     {item.cover_url ? (
                                         <Image
                                             source={{ uri: item.cover_url }}
-                                            style={{ width: "100%", height: "100%" }}
+                                            style={{
+                                                width: "100%",
+                                                height: "100%",
+                                            }}
                                             contentFit="cover"
                                         />
                                     ) : (

@@ -60,7 +60,7 @@ export default function NewArtistScreen() {
     }
 
     return (
-        <ScrollView className="flex-1">
+        <ScrollView className="flex-1 bg-background">
             <Stack.Screen
                 options={{
                     title: "New Artist",

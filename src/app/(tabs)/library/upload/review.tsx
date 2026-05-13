@@ -9,7 +9,8 @@ import { useMusic } from "@/src/hooks/useMusic";
 import { useUploadStore } from "@/src/lib/uploadStore";
 
 export default function ReviewScreen() {
-    const { file, title, duration, artist, album, coverUri, reset } = useUploadStore();
+    const { file, title, duration, artist, album, coverUri, reset } =
+        useUploadStore();
     const { uploadAudio, uploadImage, useCreateSong } = useMusic();
     const createSongMutation = useCreateSong();
     const router = useRouter();
@@ -43,8 +44,11 @@ export default function ReviewScreen() {
                 album_id: album.id,
                 duration: duration,
             };
-            console.log("Creating song with data:", JSON.stringify(songData, null, 2));
-            
+            console.log(
+                "Creating song with data:",
+                JSON.stringify(songData, null, 2),
+            );
+
             await createSongMutation.mutateAsync(songData);
 
             alert("Song uploaded successfully!");
@@ -75,7 +79,7 @@ export default function ReviewScreen() {
 
     return (
         <ScrollView
-            className="flex-1"
+            className="flex-1 bg-background"
             contentContainerStyle={{ padding: 16 }}
             contentInsetAdjustmentBehavior="automatic"
         >

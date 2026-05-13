@@ -101,7 +101,12 @@ export function ArtistCard({ item }: { item: any }) {
                         >
                             {item.name}
                         </AppText>
-                        <AppText style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}>
+                        <AppText
+                            style={{
+                                color: "rgba(255,255,255,0.7)",
+                                fontSize: 14,
+                            }}
+                        >
                             Artist
                         </AppText>
                     </View>

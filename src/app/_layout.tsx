@@ -21,11 +21,16 @@ import TrackPlayer, {
     IOSCategory,
     IOSCategoryMode,
 } from "react-native-track-player";
+import { StatusBar } from "expo-status-bar";
 import { PlaybackService } from "../services/playbackService";
 import { usePlayerStore } from "../lib/playerStore";
 import { useThemeStore } from "../lib/themeStore";
 import { musicService } from "../services/musicService";
+import { useCSSVariable } from "uniwind";
 import "../global.css";
+
+// Apply saved theme synchronously before first render
+Appearance.setColorScheme(useThemeStore.getState().isDark ? "dark" : "light");
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -42,15 +47,15 @@ function PlayerSync() {
     const { state } = usePlaybackState();
     const { position, duration } = useProgress(500);
     const track = useActiveTrack();
-    const setPlaybackState = usePlayerStore(s => s.setPlaybackState);
-    const setProgress = usePlayerStore(s => s.setProgress);
-    const setCurrentTrack = usePlayerStore(s => s.setCurrentTrack);
-    const repeatMode = usePlayerStore(s => s.repeatMode);
-    const listenedSeconds = usePlayerStore(s => s.listenedSeconds);
-    const hasCountedThisPlay = usePlayerStore(s => s.hasCountedThisPlay);
-    const addListenedSeconds = usePlayerStore(s => s.addListenedSeconds);
-    const markPlayCounted = usePlayerStore(s => s.markPlayCounted);
-    const resetListenProgress = usePlayerStore(s => s.resetListenProgress);
+    const setPlaybackState = usePlayerStore((s) => s.setPlaybackState);
+    const setProgress = usePlayerStore((s) => s.setProgress);
+    const setCurrentTrack = usePlayerStore((s) => s.setCurrentTrack);
+    const repeatMode = usePlayerStore((s) => s.repeatMode);
+    const listenedSeconds = usePlayerStore((s) => s.listenedSeconds);
+    const hasCountedThisPlay = usePlayerStore((s) => s.hasCountedThisPlay);
+    const addListenedSeconds = usePlayerStore((s) => s.addListenedSeconds);
+    const markPlayCounted = usePlayerStore((s) => s.markPlayCounted);
+    const resetListenProgress = usePlayerStore((s) => s.resetListenProgress);
     const didLoopRef = useRef(false);
     const prevPositionRef = useRef(0);
 
@@ -77,7 +82,8 @@ function PlayerSync() {
 
     // Check listen threshold: min(30s, 50% of duration)
     useEffect(() => {
-        if (hasCountedThisPlay || duration === 0 || listenedSeconds === 0) return;
+        if (hasCountedThisPlay || duration === 0 || listenedSeconds === 0)
+            return;
         const threshold = Math.min(30, duration * 0.5);
         if (listenedSeconds >= threshold && track?.id) {
             markPlayCounted();
@@ -100,7 +106,9 @@ function PlayerSync() {
         if (position / duration >= 0.98 && !didLoopRef.current) {
             didLoopRef.current = true;
             TrackPlayer.seekTo(0).then(() => TrackPlayer.play());
-            setTimeout(() => { didLoopRef.current = false; }, 2000);
+            setTimeout(() => {
+                didLoopRef.current = false;
+            }, 2000);
         }
     }, [position, duration, repeatMode]);
 
@@ -139,12 +147,13 @@ async function setupPlayer() {
             ],
             // Android specific
             android: {
-                appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback,
+                appKilledPlaybackBehavior:
+                    AppKilledPlaybackBehavior.ContinuePlayback,
             },
         });
         isPlayerInitialized = true;
     } catch (e) {
-        if ((e as any).code === 'player_already_initialized') {
+        if ((e as any).code === "player_already_initialized") {
             isPlayerInitialized = true;
         } else {
             console.log("TrackPlayer setup error:", e);
@@ -196,8 +205,12 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
         });
 
         // 2. Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            console.log(`[Auth] Event: ${_event}, User: ${session?.user?.email ?? "None"}`);
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            console.log(
+                `[Auth] Event: ${_event}, User: ${session?.user?.email ?? "None"}`,
+            );
             setSession(session);
         });
 
@@ -206,21 +219,31 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
             console.log("[Auth] Deep Link Received:", url);
             const fragment = url.split("#")[1];
             if (fragment) {
-                const params = fragment.split("&").reduce((acc, part) => {
-                    const [key, value] = part.split("=");
-                    acc[key] = value;
-                    return acc;
-                }, {} as Record<string, string>);
+                const params = fragment.split("&").reduce(
+                    (acc, part) => {
+                        const [key, value] = part.split("=");
+                        acc[key] = value;
+                        return acc;
+                    },
+                    {} as Record<string, string>,
+                );
 
                 const { access_token, refresh_token } = params;
                 if (access_token && refresh_token) {
-                    console.log("[Auth] Manually setting session from deep link...");
-                    await supabase.auth.setSession({ access_token, refresh_token });
+                    console.log(
+                        "[Auth] Manually setting session from deep link...",
+                    );
+                    await supabase.auth.setSession({
+                        access_token,
+                        refresh_token,
+                    });
                 }
             }
         };
 
-        const linkSub = Linking.addEventListener("url", ({ url }) => handleDeepLink(url));
+        const linkSub = Linking.addEventListener("url", ({ url }) =>
+            handleDeepLink(url),
+        );
         Linking.getInitialURL().then((url) => {
             if (url) handleDeepLink(url);
         });
@@ -239,10 +262,12 @@ function ThemeApplier() {
     useEffect(() => {
         Appearance.setColorScheme(isDark ? "dark" : "light");
     }, [isDark]);
-    return null;
+    return <StatusBar style={isDark ? "light" : "dark"} />;
 }
 
 export default function RootLayout() {
+    const backgroundColor = String(useCSSVariable("--color-background"));
+
     return (
         <GestureHandlerRootView>
             <SafeAreaProvider>
@@ -252,10 +277,27 @@ export default function RootLayout() {
                             <NavigationLogic>
                                 <ThemeApplier />
                                 <PlayerSync />
-                                <Stack screenOptions={{ headerShown: false }}>
-                                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                                    <Stack.Screen name="login" options={{ headerShown: false, gestureEnabled: false }} />
+                                <Stack
+                                    screenOptions={{
+                                        headerShown: false,
+                                        contentStyle: { backgroundColor },
+                                    }}
+                                >
+                                    <Stack.Screen
+                                        name="index"
+                                        options={{ headerShown: false }}
+                                    />
+                                    <Stack.Screen
+                                        name="(tabs)"
+                                        options={{ headerShown: false }}
+                                    />
+                                    <Stack.Screen
+                                        name="login"
+                                        options={{
+                                            headerShown: false,
+                                            gestureEnabled: false,
+                                        }}
+                                    />
                                     <Stack.Screen
                                         name="player"
                                         options={{

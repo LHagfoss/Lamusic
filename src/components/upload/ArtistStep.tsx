@@ -3,11 +3,7 @@ import { Image } from "expo-image";
 import { SymbolView } from "expo-symbols";
 import { PressableOpacity } from "pressto";
 import React, { useState } from "react";
-import {
-    FlatList,
-    View,
-    ActivityIndicator,
-} from "react-native";
+import { FlatList, View, ActivityIndicator } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components";
 import { useMusic } from "@/src/hooks/useMusic";
@@ -34,13 +30,14 @@ export function ArtistStep({ onSelect, onBack }: ArtistStepProps) {
         ) || [];
 
     return (
-        <View className="flex-1">
+        <View className="flex-1 bg-background">
             <Stack.Screen
                 options={{
                     title: "Select Artist",
                     headerSearchBarOptions: {
                         placeholder: "Search artists...",
-                        onChangeText: (event) => setSearch(event.nativeEvent.text),
+                        onChangeText: (event) =>
+                            setSearch(event.nativeEvent.text),
                         hideWhenScrolling: false,
                         textColor: primaryText,
                         hintTextColor: secondaryText,
@@ -54,9 +51,13 @@ export function ArtistStep({ onSelect, onBack }: ArtistStepProps) {
                 </View>
             ) : isError ? (
                 <View className="flex-1 items-center justify-center p-8 bg-background">
-                    <AppText className="text-danger mb-4 text-center">Failed to load artists.</AppText>
+                    <AppText className="text-danger mb-4 text-center">
+                        Failed to load artists.
+                    </AppText>
                     <PressableOpacity onPress={() => refetch()}>
-                        <AppText className="text-primary font-bold">Retry</AppText>
+                        <AppText className="text-primary font-bold">
+                            Retry
+                        </AppText>
                     </PressableOpacity>
                 </View>
             ) : (
@@ -66,9 +67,11 @@ export function ArtistStep({ onSelect, onBack }: ArtistStepProps) {
                     contentInsetAdjustmentBehavior="automatic"
                     ListHeaderComponent={() => (
                         <PressableOpacity
-                            onPress={() => router.push("/library/upload/new-artist")}
+                            onPress={() =>
+                                router.push("/library/upload/new-artist")
+                            }
                         >
-                            <View 
+                            <View
                                 className="flex-row items-center p-4 border-b-[0.5px]"
                                 style={{ borderBottomColor: border }}
                             >
@@ -79,7 +82,10 @@ export function ArtistStep({ onSelect, onBack }: ArtistStepProps) {
                                         tintColor={primaryText}
                                     />
                                 </View>
-                                <AppText className="text-base" weight="semibold">
+                                <AppText
+                                    className="text-base"
+                                    weight="semibold"
+                                >
                                     New Artist
                                 </AppText>
                             </View>
@@ -91,7 +97,7 @@ export function ArtistStep({ onSelect, onBack }: ArtistStepProps) {
                                 onSelect({ id: item.id, name: item.name })
                             }
                         >
-                            <View 
+                            <View
                                 className="flex-row items-center p-4 border-b-[0.5px]"
                                 style={{ borderBottomColor: border }}
                             >
@@ -99,7 +105,10 @@ export function ArtistStep({ onSelect, onBack }: ArtistStepProps) {
                                     {item.image_url ? (
                                         <Image
                                             source={{ uri: item.image_url }}
-                                            style={{ width: "100%", height: "100%" }}
+                                            style={{
+                                                width: "100%",
+                                                height: "100%",
+                                            }}
                                             contentFit="cover"
                                         />
                                     ) : (

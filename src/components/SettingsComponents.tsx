@@ -36,7 +36,10 @@ export function SettingsItem({
     const hasToggle = !!toggle;
 
     return (
-        <PressableOpacity onPress={hasToggle ? undefined : onPress} disabled={hasToggle && !onPress}>
+        <PressableOpacity
+            onPress={hasToggle ? undefined : onPress}
+            disabled={hasToggle && !onPress}
+        >
             <View className="flex-row items-center pl-4">
                 {icon && (
                     <View
@@ -73,7 +76,10 @@ export function SettingsItem({
                     ) : (
                         <>
                             {value && (
-                                <AppText className="text-secondary-text mr-2" size="sm">
+                                <AppText
+                                    className="text-secondary-text mr-2"
+                                    size="sm"
+                                >
                                     {value}
                                 </AppText>
                             )}

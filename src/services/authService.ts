@@ -12,7 +12,7 @@ export const authService = {
                 scheme: "lamusic",
                 path: "google-auth",
             });
-            
+
             console.log("Redirect URI:", redirectTo);
 
             const { data, error } = await supabase.auth.signInWithOAuth({
@@ -31,28 +31,37 @@ export const authService = {
 
             if (data?.url) {
                 console.log("Supabase Auth URL:", data.url);
-                const res = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+                const res = await WebBrowser.openAuthSessionAsync(
+                    data.url,
+                    redirectTo,
+                );
 
                 if (res.type === "success" && res.url) {
                     const { url } = res;
                     console.log("Auth session success, parsing tokens...");
-                    
+
                     const fragment = url.split("#")[1];
                     if (fragment) {
-                        const params = fragment.split("&").reduce((acc, part) => {
-                            const [key, value] = part.split("=");
-                            acc[key] = value;
-                            return acc;
-                        }, {} as Record<string, string>);
+                        const params = fragment.split("&").reduce(
+                            (acc, part) => {
+                                const [key, value] = part.split("=");
+                                acc[key] = value;
+                                return acc;
+                            },
+                            {} as Record<string, string>,
+                        );
 
                         const { access_token, refresh_token } = params;
 
                         if (access_token && refresh_token) {
-                            console.log("Setting session manually from browser result...");
-                            const { error: sessionError } = await supabase.auth.setSession({
-                                access_token,
-                                refresh_token,
-                            });
+                            console.log(
+                                "Setting session manually from browser result...",
+                            );
+                            const { error: sessionError } =
+                                await supabase.auth.setSession({
+                                    access_token,
+                                    refresh_token,
+                                });
                             if (sessionError) throw sessionError;
                         }
                     }
@@ -64,15 +73,17 @@ export const authService = {
         }
     },
 
-
     async signOut() {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
     },
 
     async getCurrentUser() {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const {
+            data: { user },
+            error,
+        } = await supabase.auth.getUser();
         if (error) return null;
         return user;
-    }
+    },
 };

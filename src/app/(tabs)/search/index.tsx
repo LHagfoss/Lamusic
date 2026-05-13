@@ -14,7 +14,12 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 import { useCSSVariable } from "uniwind";
-import { AppDivider, AppText, SavedRow, SegmentedControl } from "@/src/components";
+import {
+    AppDivider,
+    AppText,
+    SavedRow,
+    SegmentedControl,
+} from "@/src/components";
 import { useMusic } from "@/src/hooks/useMusic";
 import { usePlayerStore } from "@/src/lib/playerStore";
 
@@ -29,11 +34,19 @@ export default function SearchScreen() {
     const [query, setQuery] = useState("");
     const [tabIndex, setTabIndex] = useState(0);
 
-    const { useSearchSongs, useSearchAlbums, useSearchArtists, useRecentSongs } = useMusic();
+    const {
+        useSearchSongs,
+        useSearchAlbums,
+        useSearchArtists,
+        useRecentSongs,
+    } = useMusic();
 
-    const { data: songs = [], isFetching: songsFetching } = useSearchSongs(query);
-    const { data: albums = [], isFetching: albumsFetching } = useSearchAlbums(query);
-    const { data: artists = [], isFetching: artistsFetching } = useSearchArtists(query);
+    const { data: songs = [], isFetching: songsFetching } =
+        useSearchSongs(query);
+    const { data: albums = [], isFetching: albumsFetching } =
+        useSearchAlbums(query);
+    const { data: artists = [], isFetching: artistsFetching } =
+        useSearchArtists(query);
     const { data: recentSongs = [] } = useRecentSongs();
 
     const isLoading = songsFetching || albumsFetching || artistsFetching;
@@ -117,7 +130,9 @@ export default function SearchScreen() {
                                         type="Songs"
                                         onPress={() => handleSongPress(item)}
                                     />
-                                    {i < recentSongs.length - 1 && <AppDivider />}
+                                    {i < recentSongs.length - 1 && (
+                                        <AppDivider />
+                                    )}
                                 </View>
                             ))
                         )}
@@ -152,13 +167,17 @@ export default function SearchScreen() {
                                         data={songs}
                                         keyExtractor={(item) => item.id}
                                         scrollEnabled={false}
-                                        ItemSeparatorComponent={() => <AppDivider />}
+                                        ItemSeparatorComponent={() => (
+                                            <AppDivider />
+                                        )}
                                         renderItem={({ item }) => (
                                             <SavedRow
                                                 item={item}
                                                 secondaryText={secondaryText}
                                                 type="Songs"
-                                                onPress={() => handleSongPress(item)}
+                                                onPress={() =>
+                                                    handleSongPress(item)
+                                                }
                                             />
                                         )}
                                         ListEmptyComponent={() => (
@@ -177,13 +196,17 @@ export default function SearchScreen() {
                                         data={albums}
                                         keyExtractor={(item) => item.id}
                                         scrollEnabled={false}
-                                        ItemSeparatorComponent={() => <AppDivider />}
+                                        ItemSeparatorComponent={() => (
+                                            <AppDivider />
+                                        )}
                                         renderItem={({ item }) => (
                                             <SavedRow
                                                 item={item}
                                                 secondaryText={secondaryText}
                                                 type="Albums"
-                                                onPress={() => handleAlbumPress(item)}
+                                                onPress={() =>
+                                                    handleAlbumPress(item)
+                                                }
                                             />
                                         )}
                                         ListEmptyComponent={() => (
@@ -202,13 +225,17 @@ export default function SearchScreen() {
                                         data={artists}
                                         keyExtractor={(item) => item.id}
                                         scrollEnabled={false}
-                                        ItemSeparatorComponent={() => <AppDivider />}
+                                        ItemSeparatorComponent={() => (
+                                            <AppDivider />
+                                        )}
                                         renderItem={({ item }) => (
                                             <SavedRow
                                                 item={item}
                                                 secondaryText={secondaryText}
                                                 type="Artists"
-                                                onPress={() => handleArtistPress(item)}
+                                                onPress={() =>
+                                                    handleArtistPress(item)
+                                                }
                                             />
                                         )}
                                         ListEmptyComponent={() => (

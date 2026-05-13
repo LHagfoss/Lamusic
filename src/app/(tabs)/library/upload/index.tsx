@@ -11,7 +11,15 @@ import { useUploadStore } from "@/src/lib/uploadStore";
 import { getAudioDuration } from "@/src/utils/audio";
 
 export default function FileSelectionScreen() {
-    const { file, title, coverUri, setFile, setTitle, setDuration, setCoverUri } = useUploadStore();
+    const {
+        file,
+        title,
+        coverUri,
+        setFile,
+        setTitle,
+        setDuration,
+        setCoverUri,
+    } = useUploadStore();
     const router = useRouter();
 
     const primaryText = String(useCSSVariable("--color-primary-text"));
@@ -58,6 +66,7 @@ export default function FileSelectionScreen() {
 
     return (
         <ScrollView
+            className="flex-1 bg-background"
             showsVerticalScrollIndicator={false}
             contentInsetAdjustmentBehavior="automatic"
         >
@@ -149,7 +158,10 @@ export default function FileSelectionScreen() {
                                     {coverUri ? (
                                         <Image
                                             source={{ uri: coverUri }}
-                                            style={{ width: "100%", height: "100%" }}
+                                            style={{
+                                                width: "100%",
+                                                height: "100%",
+                                            }}
                                             contentFit="cover"
                                         />
                                     ) : (

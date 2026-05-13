@@ -38,6 +38,7 @@ export default function HomeScreen() {
 
     return (
         <ScrollView
+            className="flex-1 bg-background"
             showsVerticalScrollIndicator={false}
             contentInsetAdjustmentBehavior="automatic"
             refreshControl={

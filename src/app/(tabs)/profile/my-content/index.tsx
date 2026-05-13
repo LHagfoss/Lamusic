@@ -102,7 +102,7 @@ export default function MyContentScreen() {
                         ? item.image_url
                         : type === "Albums"
                           ? item.cover_url
-                          : (item.cover_url || item.albums?.cover_url),
+                          : item.cover_url || item.albums?.cover_url,
                 artistName:
                     type === "Songs"
                         ? item.artists?.name
@@ -131,12 +131,16 @@ export default function MyContentScreen() {
     }
 
     return (
-        <ScrollView 
-            className="bg-white"
+        <ScrollView
+            className="flex-1 bg-background"
             showsVerticalScrollIndicator={false}
             contentInsetAdjustmentBehavior="automatic"
             refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor={primaryColor}
+                />
             }
         >
             <Stack.Screen

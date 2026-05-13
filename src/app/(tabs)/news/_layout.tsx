@@ -1,14 +1,17 @@
 import { Stack } from "expo-router";
-import { theme } from "@/src/utils";
+import { useCSSVariable } from "uniwind";
 
 export default function NewsLayout() {
+    const primaryTextColor = String(useCSSVariable("--color-primary-text"));
+    const backgroundColor = String(useCSSVariable("--color-background"));
+
     return (
         <Stack
             screenOptions={{
                 headerBackButtonDisplayMode: "minimal",
                 headerTransparent: true,
-                headerTitleStyle: { color: theme["primary-text"] },
-                contentStyle: { backgroundColor: theme.background },
+                headerTitleStyle: { color: primaryTextColor },
+                contentStyle: { backgroundColor },
             }}
         >
             <Stack.Screen
@@ -16,9 +19,9 @@ export default function NewsLayout() {
                 options={{
                     title: "News",
                     headerLargeTitle: true,
-                    headerLargeTitleStyle: { color: theme["primary-text"] },
+                    headerLargeTitleStyle: { color: primaryTextColor },
                     contentStyle: {
-                        backgroundColor: theme.background,
+                        backgroundColor,
                     },
                 }}
             />

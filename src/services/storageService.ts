@@ -15,7 +15,12 @@ export const storageService = {
         return this.uploadFile("storage", path, uri, "image/jpeg");
     },
 
-    async uploadFile(bucket: string, path: string, uri: string, contentType: string) {
+    async uploadFile(
+        bucket: string,
+        path: string,
+        uri: string,
+        contentType: string,
+    ) {
         try {
             // In Expo 55+, the legacy API is required for readAsStringAsync
             const base64 = await FileSystem.readAsStringAsync(uri, {
@@ -26,22 +31,25 @@ export const storageService = {
                 .from(bucket)
                 .upload(path, decode(base64), {
                     contentType,
-                    upsert: true
+                    upsert: true,
                 });
 
             if (error) {
-                console.error(`Supabase storage error (Bucket: ${bucket}):`, error);
+                console.error(
+                    `Supabase storage error (Bucket: ${bucket}):`,
+                    error,
+                );
                 throw error;
             }
 
-            const { data: { publicUrl } } = supabase.storage
-                .from(bucket)
-                .getPublicUrl(path);
+            const {
+                data: { publicUrl },
+            } = supabase.storage.from(bucket).getPublicUrl(path);
 
             return publicUrl;
         } catch (error) {
             console.error("Storage upload service error:", error);
             throw error;
         }
-    }
+    },
 };

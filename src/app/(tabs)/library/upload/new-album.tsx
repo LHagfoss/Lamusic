@@ -15,7 +15,7 @@ export default function NewAlbumScreen() {
     const router = useRouter();
     const { useCreateAlbum, uploadImage } = useMusic();
     const createAlbumMutation = useCreateAlbum();
-    
+
     const [newTitle, setNewTitle] = useState("");
     const [newCover, setNewCover] = useState<string | null>(null);
 
@@ -55,7 +55,11 @@ export default function NewAlbumScreen() {
                 artist_id: artist!.id,
                 cover_url: coverUrl,
             });
-            setAlbum({ id: album.id, title: album.title, coverUrl: album.cover_url });
+            setAlbum({
+                id: album.id,
+                title: album.title,
+                coverUrl: album.cover_url,
+            });
             router.dismiss();
             router.push("/library/upload/review");
         } catch (error) {
@@ -65,50 +69,69 @@ export default function NewAlbumScreen() {
     }
 
     return (
-        <ScrollView 
-            className="flex-1"
+        <ScrollView
+            className="flex-1 bg-background"
             contentInsetAdjustmentBehavior="automatic"
         >
-            <Stack.Screen 
-                options={{ 
+            <Stack.Screen
+                options={{
                     title: "New Album",
                     headerLeft: () => (
                         <Pressable onPress={() => router.back()}>
                             <View className="px-2">
-                                <AppText className="text-primary font-medium">Cancel</AppText>
+                                <AppText className="text-primary font-medium">
+                                    Cancel
+                                </AppText>
                             </View>
                         </Pressable>
                     ),
                     headerRight: () => (
-                        <Pressable onPress={handleCreate} disabled={!newTitle || createAlbumMutation.isPending}>
+                        <Pressable
+                            onPress={handleCreate}
+                            disabled={
+                                !newTitle || createAlbumMutation.isPending
+                            }
+                        >
                             <View className="px-2">
-                                <AppText 
-                                    className="font-bold" 
-                                    style={{ color: !newTitle ? secondaryText : primary }}
+                                <AppText
+                                    className="font-bold"
+                                    style={{
+                                        color: !newTitle
+                                            ? secondaryText
+                                            : primary,
+                                    }}
                                 >
-                                    {createAlbumMutation.isPending ? "Adding..." : "Add"}
+                                    {createAlbumMutation.isPending
+                                        ? "Adding..."
+                                        : "Add"}
                                 </AppText>
                             </View>
                         </Pressable>
-                    )
-                }} 
+                    ),
+                }}
             />
-            
+
             <View className="items-center mt-10 mb-10">
                 <PressableOpacity onPress={pickImage}>
                     <View className="items-center">
                         <View className="w-40 h-40 rounded-2xl bg-secondary overflow-hidden items-center justify-center shadow-sm">
                             {newCover ? (
-                                <Image 
-                                    source={{ uri: newCover }} 
-                                    style={{ width: "100%", height: "100%" }} 
+                                <Image
+                                    source={{ uri: newCover }}
+                                    style={{ width: "100%", height: "100%" }}
                                     contentFit="cover"
                                 />
                             ) : (
-                                <SymbolView name="photo" size={40} tintColor={secondaryText} />
+                                <SymbolView
+                                    name="photo"
+                                    size={40}
+                                    tintColor={secondaryText}
+                                />
                             )}
                         </View>
-                        <AppText className="text-primary mt-3 font-medium text-center">Add Cover Art</AppText>
+                        <AppText className="text-primary mt-3 font-medium text-center">
+                            Add Cover Art
+                        </AppText>
                     </View>
                 </PressableOpacity>
             </View>
@@ -116,7 +139,11 @@ export default function NewAlbumScreen() {
             <View className="px-4">
                 <SettingsGroup title="Album Info">
                     <View className="p-4">
-                        <AppText className="text-xs mb-1" weight="medium" style={{ color: secondaryText }}>
+                        <AppText
+                            className="text-xs mb-1"
+                            weight="medium"
+                            style={{ color: secondaryText }}
+                        >
                             TITLE
                         </AppText>
                         <TextInput
@@ -125,7 +152,11 @@ export default function NewAlbumScreen() {
                             onChangeText={setNewTitle}
                             placeholderTextColor={secondaryText}
                             autoFocus
-                            style={{ color: primaryText, fontSize: 17, paddingVertical: 4 }}
+                            style={{
+                                color: primaryText,
+                                fontSize: 17,
+                                paddingVertical: 4,
+                            }}
                         />
                     </View>
                 </SettingsGroup>
