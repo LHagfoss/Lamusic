@@ -29,6 +29,7 @@
         "@shopify/flash-list": "2.0.2",
         "@supabase/supabase-js": "^2.105.3",
         "@tanstack/react-query": "^5.100.9",
+        "airplay-button": "./modules/airplay-button",
         "axios": "^1.16.0",
         "base64-arraybuffer": "^1.0.2",
         "clsx": "^2.1.1",

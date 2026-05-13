@@ -21,6 +21,7 @@ import TrackPlayer, { RepeatMode } from "react-native-track-player";
 import { useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
 import { usePlayerStore } from "@/src/lib/playerStore";
+import { AirplayButton } from "@/modules/airplay-button";
 import { LiquidSlider } from "../components/LiquidSlider";
 import { useMusic } from "../hooks/useMusic";
 
@@ -376,6 +377,20 @@ export default function PlayerScreen() {
                             : "Repeat"}
                     </AppText>
                 </Pressable>
+
+                <View className="items-center gap-1">
+                    <AirplayButton
+                        tintColor={secondaryText}
+                        activeTintColor={primary}
+                        style={{ width: 44, height: 44 }}
+                    />
+                    <AppText
+                        className="text-secondary-text"
+                        style={{ fontSize: 10 }}
+                    >
+                        Speakers
+                    </AppText>
+                </View>
 
                 <Pressable
                     className="items-center gap-1"
