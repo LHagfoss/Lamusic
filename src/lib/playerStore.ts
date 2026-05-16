@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import TrackPlayer, { State, RepeatMode } from "react-native-track-player";
+import { cacheService } from "../services/cacheService";
+import { useCacheStore } from "./cacheStore";
 
 export interface Track {
     id: string | number;
@@ -52,6 +54,10 @@ interface PlayerStore {
     setCurrentTrack: (trackId: string) => void;
 }
 
+function resolveUrl(track: Track): string {
+    return useCacheStore.getState().getCachedPath(track.id.toString()) ?? track.url!;
+}
+
 export const usePlayerStore = create<PlayerStore>()(
     persist(
         (set, get) => ({
@@ -83,7 +89,7 @@ export const usePlayerStore = create<PlayerStore>()(
 
                     const nativeTracks = tracks.map((t) => ({
                         id: t.id.toString(),
-                        url: t.url!,
+                        url: resolveUrl(t),
                         title: t.title,
                         artist: t.artist,
                         artwork: t.cover?.uri,
@@ -280,7 +286,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     const after = [...queue.slice(currentIndex + 1)].sort(() => Math.random() - 0.5);
                     const newQueue = [...before, queue[currentIndex], ...after];
                     const nativeTracks = newQueue.map((t) => ({
-                        id: t.id.toString(), url: t.url!, title: t.title,
+                        id: t.id.toString(), url: resolveUrl(t), title: t.title,
                         artist: t.artist, artwork: t.cover?.uri, duration: t.duration,
                     }));
                     await TrackPlayer.reset();
@@ -292,7 +298,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 } else {
                     const restoreIndex = Math.max(0, originalQueue.findIndex((t) => t.id === currentTrack?.id));
                     const nativeTracks = originalQueue.map((t) => ({
-                        id: t.id.toString(), url: t.url!, title: t.title,
+                        id: t.id.toString(), url: resolveUrl(t), title: t.title,
                         artist: t.artist, artwork: t.cover?.uri, duration: t.duration,
                     }));
                     await TrackPlayer.reset();
@@ -318,7 +324,10 @@ export const usePlayerStore = create<PlayerStore>()(
                     (t) => t.id.toString() === trackId,
                 );
                 if (index !== -1) {
-                    set({ currentIndex: index, currentTrack: queue[index] });
+                    const track = queue[index];
+                    set({ currentIndex: index, currentTrack: track });
+                    // Background cache on WiFi — fire and forget
+                    cacheService.cacheSong(track).catch(() => {});
                 }
             },
 
@@ -343,7 +352,7 @@ export const usePlayerStore = create<PlayerStore>()(
 
                     const nativeTracks = queue.map((t) => ({
                         id: t.id.toString(),
-                        url: t.url!,
+                        url: resolveUrl(t),
                         title: t.title,
                         artist: t.artist,
                         artwork: t.cover?.uri,

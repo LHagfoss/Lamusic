@@ -12,7 +12,9 @@ import {
 } from "@/src/components";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useMusic } from "@/src/hooks/useMusic";
+import { useCacheStore } from "@/src/lib/cacheStore";
 import { usePlayerStore } from "@/src/lib/playerStore";
+import { cacheService } from "@/src/services/cacheService";
 import { musicService } from "@/src/services/musicService";
 
 export default function ProfileScreen() {
@@ -23,6 +25,9 @@ export default function ProfileScreen() {
     const clearQueue = usePlayerStore((s) => s.clearQueue);
     const { useMyContent } = useMusic();
     const { data: myContent } = useMyContent();
+
+    const cacheTotalBytes = useCacheStore((s) => s.totalBytes);
+    const cacheMB = (cacheTotalBytes / (1024 * 1024)).toFixed(0);
 
     const [backfillProgress, setBackfillProgress] = useState("");
 
@@ -135,6 +140,28 @@ export default function ProfileScreen() {
                     iconBgColor="#1C1C3A"
                     isLast
                     onPress={() => router.navigate("/(tabs)/profile/appearance")}
+                />
+            </SettingsGroup>
+
+            <SettingsGroup title="Storage">
+                <SettingsItem
+                    label={`${cacheMB} MB cached`}
+                    icon="internaldrive"
+                    iconBgColor="#636366"
+                    showChevron={false}
+                    isLast={false}
+                />
+                <SettingsItem
+                    label="Clear Cache"
+                    icon="trash.fill"
+                    iconBgColor="#FF3B30"
+                    isLast
+                    onPress={() => {
+                        Alert.alert("Clear Cache", `Delete ${cacheMB} MB of cached audio?`, [
+                            { text: "Cancel", style: "cancel" },
+                            { text: "Clear", style: "destructive", onPress: () => cacheService.clearAll() },
+                        ]);
+                    }}
                 />
             </SettingsGroup>
 
