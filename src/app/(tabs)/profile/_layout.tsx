@@ -54,9 +54,10 @@ export default function ProfileLayout() {
                 options={{
                     title: "",
                     presentation: "formSheet",
-                    headerShown: true,
-                    headerTransparent: true,
-                    sheetAllowedDetents: [0.6, 1.0],
+                    headerShown: false,
+                    headerTransparent: false,
+                    contentStyle: { backgroundColor },
+                    sheetAllowedDetents: [0.55],
                     sheetGrabberVisible: true,
                 }}
             />

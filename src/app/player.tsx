@@ -42,6 +42,8 @@ export default function PlayerScreen() {
     const skipToIndex = usePlayerStore((s) => s.skipToIndex);
     const repeatMode = usePlayerStore((s) => s.repeatMode);
     const toggleRepeatMode = usePlayerStore((s) => s.toggleRepeatMode);
+    const isShuffled = usePlayerStore((s) => s.isShuffled);
+    const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
 
     const router = useRouter();
     const { useRecentSongs, useToggleFavorite } = useMusic();
@@ -347,6 +349,31 @@ export default function PlayerScreen() {
             </View>
 
             <View className="px-6 flex-row items-center justify-between">
+                <Pressable
+                    className="items-center gap-1"
+                    onPress={toggleShuffle}
+                >
+                    <View
+                        style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 22,
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: isShuffled ? primary : "transparent",
+                        }}
+                    >
+                        <SymbolView
+                            name="shuffle"
+                            size={22}
+                            tintColor={isShuffled ? onPrimaryText : secondaryText}
+                        />
+                    </View>
+                    <AppText className="text-secondary-text" style={{ fontSize: 10 }}>
+                        Shuffle
+                    </AppText>
+                </Pressable>
+
                 <Pressable
                     className="items-center gap-1"
                     onPress={toggleRepeatMode}

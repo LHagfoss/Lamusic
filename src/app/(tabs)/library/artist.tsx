@@ -105,6 +105,8 @@ export default function ArtistScreen() {
         });
     };
 
+    // console.log(JSON.stringify(artist, null, 4))
+
     return (
         <>
             {isFocused && (
@@ -152,21 +154,21 @@ export default function ArtistScreen() {
                 contentContainerClassName="pb-safe"
             >
                 <View className="px-4">
-                <View className="overflow-hidden rounded-xl w-full aspect-3/2 bg-secondary items-center justify-center">
-                    {heroImage ? (
-                        <Image
-                            source={{ uri: heroImage }}
-                            style={{ width: "100%", height: "100%" }}
-                            contentFit="cover"
-                        />
-                    ) : (
-                        <SymbolView
-                            name="person.fill"
-                            size={60}
-                            tintColor={secondaryText}
-                        />
-                    )}
-                </View>
+                    <View className="overflow-hidden rounded-xl w-full aspect-3/2 bg-secondary items-center justify-center">
+                        {heroImage ? (
+                            <Image
+                                source={{ uri: heroImage }}
+                                style={{ width: "100%", height: "100%" }}
+                                contentFit="cover"
+                            />
+                        ) : (
+                            <SymbolView
+                                name="person.fill"
+                                size={60}
+                                tintColor={secondaryText}
+                            />
+                        )}
+                    </View>
                 </View>
 
                 <>
@@ -251,7 +253,11 @@ export default function ArtistScreen() {
                                     id: track.id,
                                     title: track.title,
                                     artist: artist.name,
-                                    cover: { uri: track.cover_url || track.albumCoverUrl },
+                                    cover: {
+                                        uri:
+                                            track.cover_url ||
+                                            track.albumCoverUrl,
+                                    },
                                     url: track.audio_url,
                                     duration: track.duration,
                                 };
@@ -262,29 +268,46 @@ export default function ArtistScreen() {
                                                 <Pressable
                                                     onPress={() => {
                                                         router.navigate({
-                                                            pathname: "/library/song",
-                                                            params: { id: track.id },
+                                                            pathname:
+                                                                "/library/song",
+                                                            params: {
+                                                                id: track.id,
+                                                            },
                                                         });
                                                     }}
                                                     style={{ width: 140 }}
                                                 >
                                                     <AmbientBlob
-                                                        color={track.primary_color}
-                                                        style={{ width: "100%", aspectRatio: 1 }}
+                                                        color={
+                                                            track.primary_color
+                                                        }
+                                                        style={{
+                                                            width: "100%",
+                                                            aspectRatio: 1,
+                                                        }}
                                                     >
-                                                        {track.cover_url || track.albumCoverUrl ? (
+                                                        {track.cover_url ||
+                                                        track.albumCoverUrl ? (
                                                             <Image
                                                                 source={{
-                                                                    uri: track.cover_url || track.albumCoverUrl,
+                                                                    uri:
+                                                                        track.cover_url ||
+                                                                        track.albumCoverUrl,
                                                                 }}
-                                                                style={{ width: "100%", height: "100%", borderRadius: 12 }}
+                                                                style={{
+                                                                    width: "100%",
+                                                                    height: "100%",
+                                                                    borderRadius: 12,
+                                                                }}
                                                             />
                                                         ) : (
                                                             <View className="w-full h-full bg-secondary rounded-xl items-center justify-center">
                                                                 <SymbolView
                                                                     name="music.note"
                                                                     size={40}
-                                                                    tintColor={secondaryText}
+                                                                    tintColor={
+                                                                        secondaryText
+                                                                    }
                                                                 />
                                                             </View>
                                                         )}
@@ -306,21 +329,28 @@ export default function ArtistScreen() {
                                                     systemImage="play.fill"
                                                     onPress={() => {
                                                         playTrack(trackArg);
-                                                        router.navigate("/player");
+                                                        router.navigate(
+                                                            "/player",
+                                                        );
                                                     }}
                                                 />
                                                 <Button
                                                     label="Add to Queue"
                                                     systemImage="text.badge.plus"
-                                                    onPress={() => addToQueue(trackArg)}
+                                                    onPress={() =>
+                                                        addToQueue(trackArg)
+                                                    }
                                                 />
                                                 <Button
                                                     label="View Song"
                                                     systemImage="arrow.up.right"
                                                     onPress={() =>
                                                         router.navigate({
-                                                            pathname: "/library/song",
-                                                            params: { id: track.id },
+                                                            pathname:
+                                                                "/library/song",
+                                                            params: {
+                                                                id: track.id,
+                                                            },
                                                         })
                                                     }
                                                 />
@@ -343,20 +373,36 @@ export default function ArtistScreen() {
                                 No albums added yet.
                             </AppText>
                         ) : (
-                            <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -6 }}>
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    flexWrap: "wrap",
+                                    marginHorizontal: -6,
+                                }}
+                            >
                                 {(artist.albums || []).map((album: any) => (
-                                    <View key={album.id} style={{ width: "50%", padding: 6 }}>
+                                    <View
+                                        key={album.id}
+                                        style={{ width: "50%", padding: 6 }}
+                                    >
                                         <Pressable
                                             style={{ width: "100%" }}
-                                            onPress={() => handleSongPress(album)}
+                                            onPress={() =>
+                                                handleSongPress(album)
+                                            }
                                         >
                                             {album.cover_url ? (
                                                 <AmbientBlob
                                                     color={album.primary_color}
-                                                    style={{ width: "100%", aspectRatio: 1 }}
+                                                    style={{
+                                                        width: "100%",
+                                                        aspectRatio: 1,
+                                                    }}
                                                 >
                                                     <Image
-                                                        source={{ uri: album.cover_url }}
+                                                        source={{
+                                                            uri: album.cover_url,
+                                                        }}
                                                         style={{
                                                             width: "100%",
                                                             aspectRatio: 1,
@@ -370,15 +416,19 @@ export default function ArtistScreen() {
                                                         width: "100%",
                                                         aspectRatio: 1,
                                                         borderRadius: 12,
-                                                        backgroundColor: "#E5E5E5",
+                                                        backgroundColor:
+                                                            "#E5E5E5",
                                                         alignItems: "center",
-                                                        justifyContent: "center",
+                                                        justifyContent:
+                                                            "center",
                                                     }}
                                                 >
                                                     <SymbolView
                                                         name="music.note.list"
                                                         size={40}
-                                                        tintColor={secondaryText}
+                                                        tintColor={
+                                                            secondaryText
+                                                        }
                                                     />
                                                 </View>
                                             )}
@@ -389,7 +439,10 @@ export default function ArtistScreen() {
                                             >
                                                 {album.title}
                                             </AppText>
-                                            <AppText className="text-secondary-text" size="xs">
+                                            <AppText
+                                                className="text-secondary-text"
+                                                size="xs"
+                                            >
                                                 Album
                                             </AppText>
                                         </Pressable>

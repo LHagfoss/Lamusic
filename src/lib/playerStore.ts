@@ -20,6 +20,8 @@ interface PlayerStore {
     position: number;
     duration: number;
     repeatMode: RepeatMode;
+    isShuffled: boolean;
+    originalQueue: Track[];
     listenedSeconds: number;
     hasCountedThisPlay: boolean;
     pendingRestorePosition: number;
@@ -38,6 +40,7 @@ interface PlayerStore {
     seekTo: (position: number) => Promise<void>;
     setRepeatMode: (mode: RepeatMode) => Promise<void>;
     toggleRepeatMode: () => Promise<void>;
+    toggleShuffle: () => Promise<void>;
     addListenedSeconds: (seconds: number) => void;
     markPlayCounted: () => void;
     resetListenProgress: () => void;
@@ -59,6 +62,8 @@ export const usePlayerStore = create<PlayerStore>()(
             position: 0,
             duration: 0,
             repeatMode: RepeatMode.Off,
+            isShuffled: false,
+            originalQueue: [],
             listenedSeconds: 0,
             hasCountedThisPlay: false,
             pendingRestorePosition: 0,
@@ -178,6 +183,8 @@ export const usePlayerStore = create<PlayerStore>()(
                         currentIndex: -1,
                         currentTrack: null,
                         isPlaying: false,
+                        isShuffled: false,
+                        originalQueue: [],
                     });
                 } catch (error) {
                     console.error("Error clearing queue:", error);
@@ -208,8 +215,22 @@ export const usePlayerStore = create<PlayerStore>()(
 
             skipToNext: async () => {
                 try {
+                    const { queue, currentIndex } = get();
+                    const prevIndex = currentIndex;
+
                     await TrackPlayer.skipToNext();
                     await TrackPlayer.play();
+
+                    if (prevIndex >= 0 && prevIndex < queue.length - 1) {
+                        await TrackPlayer.remove(prevIndex);
+                        const newQueue = [...queue];
+                        newQueue.splice(prevIndex, 1);
+                        set({
+                            queue: newQueue,
+                            currentIndex: prevIndex,
+                            currentTrack: newQueue[prevIndex] ?? null,
+                        });
+                    }
                 } catch (error) {
                     console.log("No next track");
                 }
@@ -250,6 +271,37 @@ export const usePlayerStore = create<PlayerStore>()(
 
                 await TrackPlayer.setRepeatMode(nextMode);
                 set({ repeatMode: nextMode });
+            },
+
+            toggleShuffle: async () => {
+                const { queue, currentIndex, currentTrack, isShuffled, originalQueue, repeatMode } = get();
+                if (!isShuffled) {
+                    const before = queue.slice(0, currentIndex);
+                    const after = [...queue.slice(currentIndex + 1)].sort(() => Math.random() - 0.5);
+                    const newQueue = [...before, queue[currentIndex], ...after];
+                    const nativeTracks = newQueue.map((t) => ({
+                        id: t.id.toString(), url: t.url!, title: t.title,
+                        artist: t.artist, artwork: t.cover?.uri, duration: t.duration,
+                    }));
+                    await TrackPlayer.reset();
+                    await TrackPlayer.setRepeatMode(repeatMode);
+                    await TrackPlayer.add(nativeTracks);
+                    await TrackPlayer.skip(currentIndex);
+                    await TrackPlayer.play();
+                    set({ isShuffled: true, originalQueue: queue, queue: newQueue });
+                } else {
+                    const restoreIndex = Math.max(0, originalQueue.findIndex((t) => t.id === currentTrack?.id));
+                    const nativeTracks = originalQueue.map((t) => ({
+                        id: t.id.toString(), url: t.url!, title: t.title,
+                        artist: t.artist, artwork: t.cover?.uri, duration: t.duration,
+                    }));
+                    await TrackPlayer.reset();
+                    await TrackPlayer.setRepeatMode(repeatMode);
+                    await TrackPlayer.add(nativeTracks);
+                    await TrackPlayer.skip(restoreIndex);
+                    await TrackPlayer.play();
+                    set({ isShuffled: false, originalQueue: [], queue: originalQueue, currentIndex: restoreIndex });
+                }
             },
 
             setPlaybackState: (state) => {

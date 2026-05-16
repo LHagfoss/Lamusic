@@ -1,7 +1,8 @@
+import { GlassView } from "expo-glass-effect";
 import { Stack, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useState } from "react";
-import { Alert, Pressable, ScrollView } from "react-native";
+import { Alert, Pressable, ScrollView, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import {
     AppText,
@@ -10,6 +11,7 @@ import {
     SettingsItem,
 } from "@/src/components";
 import { useAuth } from "@/src/hooks/useAuth";
+import { useMusic } from "@/src/hooks/useMusic";
 import { usePlayerStore } from "@/src/lib/playerStore";
 import { musicService } from "@/src/services/musicService";
 
@@ -19,6 +21,8 @@ export default function ProfileScreen() {
     const { user, signOut } = useAuth();
     const router = useRouter();
     const clearQueue = usePlayerStore((s) => s.clearQueue);
+    const { useMyContent } = useMusic();
+    const { data: myContent } = useMyContent();
 
     const [backfillProgress, setBackfillProgress] = useState("");
 
@@ -28,6 +32,11 @@ export default function ProfileScreen() {
         .map((n: string) => n[0])
         .join("")
         .toUpperCase();
+
+    const artists = myContent?.length ?? 0;
+    const albums = myContent?.flatMap((a: any) => a.albums ?? []).length ?? 0;
+    const songs = myContent?.flatMap((a: any) => a.albums?.flatMap((al: any) => al.songs ?? []) ?? []).length ?? 0;
+    const totalPlays = myContent?.flatMap((a: any) => a.albums?.flatMap((al: any) => al.songs?.map((s: any) => s.play_count ?? 0) ?? []) ?? []).reduce((acc: number, n: number) => acc + n, 0) ?? 0;
 
     const handleLogOut = async () => {
         try {
@@ -86,8 +95,38 @@ export default function ProfileScreen() {
                     name={fullName}
                     email={user?.email ?? ""}
                     initials={initials}
+                    avatarUrl={user?.user_metadata?.avatar_url}
                 />
             </SettingsGroup>
+
+            <View className="px-4 mb-8">
+                <GlassView style={{ borderRadius: 24, flexDirection: "row", overflow: "hidden" }}>
+                    {[
+                        { label: "Songs", value: songs },
+                        { label: "Albums", value: albums },
+                        { label: "Artists", value: artists },
+                        { label: "Plays", value: totalPlays },
+                    ].map((stat, i, arr) => (
+                        <View
+                            key={stat.label}
+                            style={{
+                                flex: 1,
+                                alignItems: "center",
+                                paddingVertical: 16,
+                                borderRightWidth: i < arr.length - 1 ? 0.5 : 0,
+                                borderRightColor: "rgba(128,128,128,0.2)",
+                            }}
+                        >
+                            <AppText style={{ fontSize: 22, fontWeight: "700" }} className="text-primary-text">
+                                {stat.value}
+                            </AppText>
+                            <AppText style={{ fontSize: 11 }} className="text-secondary-text">
+                                {stat.label}
+                            </AppText>
+                        </View>
+                    ))}
+                </GlassView>
+            </View>
 
             <SettingsGroup title="Preferences">
                 <SettingsItem

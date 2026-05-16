@@ -1,4 +1,5 @@
 import { GlassView } from "expo-glass-effect";
+import { Image } from "expo-image";
 import { SymbolView, type SymbolViewProps } from "expo-symbols";
 import { PressableOpacity } from "pressto";
 import { Switch, View } from "react-native";
@@ -105,6 +106,7 @@ interface ProfileItemProps {
     name: string;
     email: string;
     initials: string;
+    avatarUrl?: string;
     onPress?: () => void;
 }
 
@@ -112,6 +114,7 @@ export function ProfileItem({
     name,
     email,
     initials,
+    avatarUrl,
     onPress,
 }: ProfileItemProps) {
     useThemeStore((s) => s.isDark);
@@ -130,17 +133,16 @@ export function ProfileItem({
                         alignItems: "center",
                         justifyContent: "center",
                         marginRight: 16,
+                        overflow: "hidden",
                     }}
                 >
-                    <AppText
-                        style={{
-                            color: "#ffffff",
-                            fontSize: 24,
-                            fontWeight: "700",
-                        }}
-                    >
-                        {initials}
-                    </AppText>
+                    {avatarUrl ? (
+                        <Image source={{ uri: avatarUrl }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
+                    ) : (
+                        <AppText style={{ color: "#ffffff", fontSize: 24, fontWeight: "700" }}>
+                            {initials}
+                        </AppText>
+                    )}
                 </View>
                 <View style={{ flex: 1 }}>
                     <AppText
