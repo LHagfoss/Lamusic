@@ -22,6 +22,7 @@ interface PlayerStore {
     repeatMode: RepeatMode;
     listenedSeconds: number;
     hasCountedThisPlay: boolean;
+    pendingRestorePosition: number;
 
     // Actions
     playTrack: (track: Track) => Promise<void>;
@@ -60,6 +61,7 @@ export const usePlayerStore = create<PlayerStore>()(
             repeatMode: RepeatMode.Off,
             listenedSeconds: 0,
             hasCountedThisPlay: false,
+            pendingRestorePosition: 0,
 
             playTrack: async (track) => {
                 const { playQueue } = get();
@@ -207,8 +209,8 @@ export const usePlayerStore = create<PlayerStore>()(
             skipToNext: async () => {
                 try {
                     await TrackPlayer.skipToNext();
+                    await TrackPlayer.play();
                 } catch (error) {
-                    // Probably at end of queue
                     console.log("No next track");
                 }
             },
@@ -220,9 +222,9 @@ export const usePlayerStore = create<PlayerStore>()(
                         await TrackPlayer.seekTo(0);
                     } else {
                         await TrackPlayer.skipToPrevious();
+                        await TrackPlayer.play();
                     }
                 } catch (error) {
-                    // Probably at start of queue
                     await TrackPlayer.seekTo(0);
                     console.log("No previous track");
                 }
@@ -302,11 +304,11 @@ export const usePlayerStore = create<PlayerStore>()(
                     if (currentIndex > 0) {
                         await TrackPlayer.skip(currentIndex);
                     }
-                    if (position > 5) {
-                        await TrackPlayer.seekTo(position);
-                    }
 
-                    set({ isPlaying: false });
+                    set({
+                        isPlaying: false,
+                        pendingRestorePosition: position > 5 ? position : 0,
+                    });
                 } catch (error) {
                     console.error("Error restoring playback:", error);
                 }

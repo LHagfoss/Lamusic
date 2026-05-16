@@ -1,17 +1,15 @@
 import { Button, ContextMenu, Host } from "@expo/ui/swift-ui";
-import { LegendList } from "@legendapp/list";
 import { useIsFocused } from "@react-navigation/native";
-import { FlashList } from "@shopify/flash-list";
 import { GlassView } from "expo-glass-effect";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { PressableOpacity, PressableScale } from "pressto";
+import { PressableOpacity } from "pressto";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
-import { AppButton } from "@/src/components";
+import { AmbientBlob, AppButton } from "@/src/components";
 import { AppText } from "@/src/components/AppText";
 import { useMusic } from "@/src/hooks/useMusic";
 import { usePlayerStore } from "@/src/lib/playerStore";
@@ -94,11 +92,11 @@ export default function ArtistScreen() {
             duration: t.duration,
         }));
         await playQueue(tracks, 0);
-        router.push("/player");
+        router.navigate("/player");
     };
 
     const handleSongPress = (album: any) => {
-        router.push({
+        router.navigate({
             pathname: "/library/album",
             params: {
                 albumId: album.id,
@@ -151,8 +149,9 @@ export default function ArtistScreen() {
                 className="flex-1 bg-background"
                 contentInsetAdjustmentBehavior="automatic"
                 showsVerticalScrollIndicator={false}
-                contentContainerClassName="pb-safe p-4"
+                contentContainerClassName="pb-safe"
             >
+                <View className="px-4">
                 <View className="overflow-hidden rounded-xl w-full aspect-3/2 bg-secondary items-center justify-center">
                     {heroImage ? (
                         <Image
@@ -168,9 +167,10 @@ export default function ArtistScreen() {
                         />
                     )}
                 </View>
+                </View>
 
-                <View>
-                    <View className="pt-6 pb-2 flex-row items-start justify-between gap-4">
+                <>
+                    <View className="pt-6 pb-2 flex-row items-start justify-between gap-4 px-4">
                         <View className="flex-1">
                             <AppText className="text-3xl font-bold text-primary-text">
                                 {artist.name}
@@ -229,7 +229,7 @@ export default function ArtistScreen() {
                     </View>
 
                     <View className="mb-6 pt-4">
-                        <AppText className="text-lg font-bold text-primary-text mb-3">
+                        <AppText className="text-lg font-bold text-primary-text mb-3 px-4">
                             Songs
                         </AppText>
 
@@ -238,6 +238,7 @@ export default function ArtistScreen() {
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={{
                                 gap: 12,
+                                paddingHorizontal: 16,
                             }}
                         >
                             {allTracks.length === 0 && (
@@ -260,32 +261,34 @@ export default function ArtistScreen() {
                                             <ContextMenu.Trigger>
                                                 <Pressable
                                                     onPress={() => {
-                                                        router.push({
+                                                        router.navigate({
                                                             pathname: "/library/song",
                                                             params: { id: track.id },
                                                         });
                                                     }}
                                                     style={{ width: 140 }}
                                                 >
-                                                    <View
-                                                        className="w-full bg-secondary rounded-xl overflow-hidden items-center justify-center"
-                                                        style={{ aspectRatio: 1 }}
+                                                    <AmbientBlob
+                                                        color={track.primary_color}
+                                                        style={{ width: "100%", aspectRatio: 1 }}
                                                     >
                                                         {track.cover_url || track.albumCoverUrl ? (
                                                             <Image
                                                                 source={{
                                                                     uri: track.cover_url || track.albumCoverUrl,
                                                                 }}
-                                                                style={{ width: "100%", height: "100%" }}
+                                                                style={{ width: "100%", height: "100%", borderRadius: 12 }}
                                                             />
                                                         ) : (
-                                                            <SymbolView
-                                                                name="music.note"
-                                                                size={40}
-                                                                tintColor={secondaryText}
-                                                            />
+                                                            <View className="w-full h-full bg-secondary rounded-xl items-center justify-center">
+                                                                <SymbolView
+                                                                    name="music.note"
+                                                                    size={40}
+                                                                    tintColor={secondaryText}
+                                                                />
+                                                            </View>
                                                         )}
-                                                    </View>
+                                                    </AmbientBlob>
                                                     <AppText
                                                         className="text-primary-text font-medium mt-2 text-sm"
                                                         numberOfLines={1}
@@ -303,7 +306,7 @@ export default function ArtistScreen() {
                                                     systemImage="play.fill"
                                                     onPress={() => {
                                                         playTrack(trackArg);
-                                                        router.push("/player");
+                                                        router.navigate("/player");
                                                     }}
                                                 />
                                                 <Button
@@ -315,7 +318,7 @@ export default function ArtistScreen() {
                                                     label="View Song"
                                                     systemImage="arrow.up.right"
                                                     onPress={() =>
-                                                        router.push({
+                                                        router.navigate({
                                                             pathname: "/library/song",
                                                             params: { id: track.id },
                                                         })
@@ -330,7 +333,7 @@ export default function ArtistScreen() {
                     </View>
 
                     {/* Discography Section */}
-                    <View className="mb-6">
+                    <View className="mb-6 px-4">
                         <AppText className="text-lg font-bold text-primary-text mb-3">
                             Discography
                         </AppText>
@@ -340,85 +343,45 @@ export default function ArtistScreen() {
                                 No albums added yet.
                             </AppText>
                         ) : (
-                            <FlashList
-                                data={artist.albums || []}
-                                numColumns={2}
-                                scrollEnabled={false}
-                                keyExtractor={(item: any) => item.id.toString()}
-                                renderItem={({
-                                    item: album,
-                                }: {
-                                    item: any;
-                                }) => (
-                                    <View className="flex-1 m-1">
-                                        <Host matchContents>
-                                            <ContextMenu>
-                                                <ContextMenu.Trigger>
-                                                    <Pressable
-                                                        onPress={() =>
-                                                            handleSongPress(
-                                                                album,
-                                                            )
-                                                        }
-                                                    >
-                                                        {album.cover_url ? (
-                                                            <Image
-                                                                source={{
-                                                                    uri: album.cover_url,
-                                                                }}
-                                                                style={{
-                                                                    width: "100%",
-                                                                    aspectRatio: 1,
-                                                                    borderRadius: 12,
-                                                                }}
-                                                            />
-                                                        ) : (
-                                                            <View
-                                                                style={{
-                                                                    width: "100%",
-                                                                    aspectRatio: 1,
-                                                                    borderRadius: 12,
-                                                                    backgroundColor:
-                                                                        "#E5E5E5",
-                                                                    alignItems:
-                                                                        "center",
-                                                                    justifyContent:
-                                                                        "center",
-                                                                }}
-                                                            >
-                                                                <SymbolView
-                                                                    name="music.note.list"
-                                                                    size={40}
-                                                                    tintColor={
-                                                                        secondaryText
-                                                                    }
-                                                                />
-                                                            </View>
-                                                        )}
-                                                    </Pressable>
-                                                </ContextMenu.Trigger>
-                                                <ContextMenu.Items>
-                                                    <Button
-                                                        label="Play"
-                                                        systemImage="play.fill"
-                                                    />
-                                                    <Button
-                                                        label="Save"
-                                                        systemImage="bookmark"
-                                                        onPress={() => {}}
-                                                    />
-                                                    <Button
-                                                        label="Open"
-                                                        systemImage="arrow.up.right"
-                                                    />
-                                                </ContextMenu.Items>
-                                            </ContextMenu>
-                                        </Host>
-                                        <PressableOpacity
-                                            onPress={() =>
-                                                handleSongPress(album)
-                                            }
+                            <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -6 }}>
+                                {(artist.albums || []).map((album: any) => (
+                                    <View key={album.id} style={{ width: "50%", padding: 6 }}>
+                                        <Pressable
+                                            style={{ width: "100%" }}
+                                            onPress={() => handleSongPress(album)}
                                         >
+                                            {album.cover_url ? (
+                                                <AmbientBlob
+                                                    color={album.primary_color}
+                                                    style={{ width: "100%", aspectRatio: 1 }}
+                                                >
+                                                    <Image
+                                                        source={{ uri: album.cover_url }}
+                                                        style={{
+                                                            width: "100%",
+                                                            aspectRatio: 1,
+                                                            borderRadius: 12,
+                                                        }}
+                                                    />
+                                                </AmbientBlob>
+                                            ) : (
+                                                <View
+                                                    style={{
+                                                        width: "100%",
+                                                        aspectRatio: 1,
+                                                        borderRadius: 12,
+                                                        backgroundColor: "#E5E5E5",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                    }}
+                                                >
+                                                    <SymbolView
+                                                        name="music.note.list"
+                                                        size={40}
+                                                        tintColor={secondaryText}
+                                                    />
+                                                </View>
+                                            )}
                                             <AppText
                                                 className="text-primary-text mt-2"
                                                 weight="medium"
@@ -426,19 +389,16 @@ export default function ArtistScreen() {
                                             >
                                                 {album.title}
                                             </AppText>
-                                        </PressableOpacity>
-                                        <AppText
-                                            className="text-secondary-text"
-                                            size="xs"
-                                        >
-                                            Album
-                                        </AppText>
+                                            <AppText className="text-secondary-text" size="xs">
+                                                Album
+                                            </AppText>
+                                        </Pressable>
                                     </View>
-                                )}
-                            />
+                                ))}
+                            </View>
                         )}
                     </View>
-                </View>
+                </>
             </ScrollView>
         </>
     );

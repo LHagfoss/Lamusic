@@ -91,7 +91,7 @@ export default function MyContentScreen() {
     }));
 
     const handlePress = (item: any, type: string) => {
-        router.push({
+        router.navigate({
             pathname: "/(tabs)/profile/my-content/manage",
             params: {
                 id: item.id,

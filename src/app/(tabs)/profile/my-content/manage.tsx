@@ -167,7 +167,7 @@ export default function ManageContentScreen() {
 
                 <Pressable
                     onPress={() =>
-                        router.push({
+                        router.navigate({
                             pathname: "/(tabs)/profile/my-content/edit",
                             params: params as any,
                         })

@@ -84,6 +84,7 @@ function PlayerSync() {
         if (listenedSeconds >= threshold && track?.id) {
             markPlayCounted();
             musicService.incrementPlayCount(track.id).catch(console.error);
+            musicService.recordPlay(track.id).catch(console.error);
         }
     }, [listenedSeconds, duration, hasCountedThisPlay, track?.id]);
 
@@ -92,6 +93,15 @@ function PlayerSync() {
         prevPositionRef.current = 0;
         resetListenProgress();
     }, [track?.id]);
+
+    // Apply pending restore position once track is loaded (duration > 0)
+    const pendingRestorePosition = usePlayerStore((s) => s.pendingRestorePosition);
+    useEffect(() => {
+        if (pendingRestorePosition > 0 && duration > 0) {
+            TrackPlayer.seekTo(pendingRestorePosition).catch(() => {});
+            usePlayerStore.setState({ pendingRestorePosition: 0 });
+        }
+    }, [duration, pendingRestorePosition]);
 
     // Position-based repeat fallback — catches cases PlaybackQueueEnded misses
     useEffect(() => {

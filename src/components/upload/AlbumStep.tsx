@@ -76,7 +76,7 @@ export function AlbumStep({
                     ListHeaderComponent={() => (
                         <PressableOpacity
                             onPress={() =>
-                                router.push("/library/upload/new-album")
+                                router.navigate("/library/upload/new-album")
                             }
                         >
                             <View

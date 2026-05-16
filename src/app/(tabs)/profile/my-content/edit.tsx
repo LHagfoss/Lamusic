@@ -45,7 +45,7 @@ export default function EditContentScreen() {
                 });
             }
             router.dismissAll();
-            router.push("/(tabs)/profile/my-content");
+            router.navigate("/(tabs)/profile/my-content");
         } catch (e) {
             console.error("Update failed", e);
         }

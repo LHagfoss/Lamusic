@@ -9,3 +9,4 @@ export * from "./ArtistCard";
 export * from "./SettingsComponents";
 export * from "./types";
 export * from "./Skeleton";
+export * from "./AmbientBlob";

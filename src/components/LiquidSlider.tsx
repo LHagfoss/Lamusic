@@ -62,17 +62,24 @@ export function LiquidSlider({
         };
     });
 
-    const gesture = Gesture.Pan()
-        .minDistance(0)
-        .hitSlop({ vertical: 10 })
-        .onStart(() => {
+    const tap = Gesture.Tap()
+        .onBegin(() => {
             isDragging.value = true;
-            startProgress.value = dragProgress.value;
-            if (onSlidingStart) scheduleOnRN(onSlidingStart);
             scheduleOnRN(
                 Haptics.impactAsync,
                 Haptics.ImpactFeedbackStyle.Light,
             );
+        })
+        .onEnd(() => {
+            isDragging.value = false;
+        });
+
+    const pan = Gesture.Pan()
+        .minDistance(0)
+        .hitSlop({ vertical: 10 })
+        .onStart(() => {
+            startProgress.value = dragProgress.value;
+            if (onSlidingStart) scheduleOnRN(onSlidingStart);
         })
         .onUpdate((event) => {
             if (containerWidth.value === 0) return;
@@ -95,6 +102,8 @@ export function LiquidSlider({
                 Haptics.NotificationFeedbackType.Success,
             );
         });
+
+    const gesture = Gesture.Simultaneous(tap, pan);
 
     return (
         <View

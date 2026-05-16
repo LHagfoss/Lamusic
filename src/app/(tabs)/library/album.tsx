@@ -4,6 +4,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SymbolView } from "expo-symbols";
 import { useCSSVariable } from "uniwind";
+import { AmbientBlob } from "@/src/components/AmbientBlob";
 import { AppText } from "@/src/components/AppText";
 import { AlbumPageSkeleton } from "@/src/components/Skeleton";
 import { useMusic } from "@/src/hooks/useMusic";
@@ -99,29 +100,33 @@ export default function AlbumScreen() {
 
             {/* Album Header */}
             <View className="items-center px-8 pt-4 pb-6">
-                <View
-                    className="w-56 bg-secondary rounded-2xl overflow-hidden mb-4 items-center justify-center"
-                    style={{ aspectRatio: 1 }}
+                <AmbientBlob
+                    color={album.primary_color}
+                    blur={30}
+                    opacity={0.3}
+                    style={{ width: 224, aspectRatio: 1, marginBottom: 16 }}
                 >
                     {album.cover_url ? (
                         <Image
                             source={{ uri: album.cover_url }}
-                            style={{ width: "100%", height: "100%" }}
+                            style={{ width: "100%", height: "100%", borderRadius: 16 }}
                         />
                     ) : (
-                        <SymbolView
-                            name="music.note.list"
-                            size={60}
-                            tintColor={secondaryText}
-                        />
+                        <View className="w-full h-full bg-secondary rounded-2xl items-center justify-center">
+                            <SymbolView
+                                name="music.note.list"
+                                size={60}
+                                tintColor={secondaryText}
+                            />
+                        </View>
                     )}
-                </View>
+                </AmbientBlob>
                 <AppText className="text-primary-text text-2xl font-bold text-center">
                     {album.title}
                 </AppText>
                 <Pressable
                     onPress={() =>
-                        router.push({
+                        router.navigate({
                             pathname: "/library/artist",
                             params: { name: artist.name },
                         })
@@ -164,7 +169,7 @@ export default function AlbumScreen() {
                                 cover: { uri: album.cover_url },
                                 url: track.audio_url,
                             });
-                            router.push({
+                            router.navigate({
                                 pathname: "/library/song",
                                 params: { id: track.id },
                             });

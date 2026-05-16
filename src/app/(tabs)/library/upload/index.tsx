@@ -204,7 +204,7 @@ export default function FileSelectionScreen() {
                             fill
                             disabled={!title}
                             onPress={() =>
-                                router.push("/library/upload/artist")
+                                router.navigate("/library/upload/artist")
                             }
                         />
                     </View>

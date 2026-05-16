@@ -21,7 +21,7 @@ export default function LoginScreen() {
                     />
                 </View>
                 <AppText className="text-3xl" weight="bold">
-                    Lamusic
+                    LaMusic
                 </AppText>
                 <AppText className="text-secondary-text text-center mt-2 px-8">
                     Your personal music library, everywhere.

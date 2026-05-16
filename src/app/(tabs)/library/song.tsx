@@ -5,6 +5,7 @@ import { SymbolView } from "expo-symbols";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useCSSVariable } from "uniwind";
+import { AmbientBlob } from "@/src/components";
 import { AppText } from "@/src/components/AppText";
 import { SongPageSkeleton } from "@/src/components/Skeleton";
 import { useMusic } from "@/src/hooks/useMusic";
@@ -125,20 +126,27 @@ export default function SongScreen() {
 
             <View className="px-4 pt-4 flex-row">
                 <View
-                    className="w-52 bg-secondary rounded-2xl overflow-hidden mb-4 items-center justify-center"
+                    className="w-52 mb-4 items-center justify-center"
                     style={{ aspectRatio: 1 }}
                 >
                     {track.coverUrl ? (
-                        <Image
-                            source={{ uri: track.coverUrl }}
+                        <AmbientBlob
+                            color={track.primary_color}
                             style={{ width: "100%", height: "100%" }}
-                        />
+                        >
+                            <Image
+                                source={{ uri: track.coverUrl }}
+                                style={{ width: "100%", height: "100%", borderRadius: 16 }}
+                            />
+                        </AmbientBlob>
                     ) : (
-                        <SymbolView
-                            name="music.note"
-                            size={60}
-                            tintColor={secondaryText}
-                        />
+                        <View className="bg-secondary w-full h-full rounded-2xl items-center justify-center">
+                            <SymbolView
+                                name="music.note"
+                                size={60}
+                                tintColor={secondaryText}
+                            />
+                        </View>
                     )}
                 </View>
 
@@ -155,7 +163,7 @@ export default function SongScreen() {
 
                         <Pressable
                             onPress={() =>
-                                router.push({
+                                router.navigate({
                                     pathname: "/library/artist",
                                     params: { name: track.artistName },
                                 })
@@ -249,7 +257,7 @@ export default function SongScreen() {
                                 key={t.id}
                                 style={{ width: 140 }}
                                 onPress={() =>
-                                    router.push({
+                                    router.navigate({
                                         pathname: "/library/song",
                                         params: { id: t.id },
                                     })

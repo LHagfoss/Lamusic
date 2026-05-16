@@ -60,6 +60,12 @@ export function useMusic() {
             queryFn: musicService.getRecentSongs,
         });
 
+    const usePlayHistory = (limit = 20) =>
+        useQuery({
+            queryKey: ["play-history", limit],
+            queryFn: () => musicService.getPlayHistory(limit),
+        });
+
     // --- Mutations ---
 
     const useCreateArtist = () =>
@@ -232,6 +238,7 @@ export function useMusic() {
         useLibrary,
         useMyContent,
         useRecentSongs,
+        usePlayHistory,
         useCreateArtist,
         useUpdateArtist,
         useDeleteArtist,

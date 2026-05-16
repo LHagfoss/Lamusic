@@ -6,6 +6,7 @@ import { PressableOpacity } from "pressto";
 import { Pressable, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { usePlayerStore } from "@/src/lib/playerStore";
+import { AmbientBlob } from "./AmbientBlob";
 import { AppText } from "./AppText";
 
 export function SongCard({ item }: { item: any }) {
@@ -49,11 +50,11 @@ export function SongCard({ item }: { item: any }) {
     }
 
     function handleOpen() {
-        router.push({ pathname: "/library/song", params: { id: item.id } });
+        router.navigate({ pathname: "/library/song", params: { id: item.id } });
     }
 
     function handleOpenArtist() {
-        router.push({
+        router.navigate({
             pathname: "/library/artist",
             params: { name: item.artists?.name },
         });
@@ -67,18 +68,23 @@ export function SongCard({ item }: { item: any }) {
                         <View style={{ width: 168 }}>
                             <Pressable onPress={handleOpen}>
                                 {item.cover_url || item.albums?.cover_url ? (
-                                    <Image
-                                        source={{
-                                            uri:
-                                                item.cover_url ||
-                                                item.albums.cover_url,
-                                        }}
-                                        style={{
-                                            width: "100%",
-                                            aspectRatio: 1,
-                                            borderRadius: 12,
-                                        }}
-                                    />
+                                    <AmbientBlob
+                                        color={item.primary_color}
+                                        style={{ width: "100%", aspectRatio: 1 }}
+                                    >
+                                        <Image
+                                            source={{
+                                                uri:
+                                                    item.cover_url ||
+                                                    item.albums.cover_url,
+                                            }}
+                                            style={{
+                                                width: "100%",
+                                                aspectRatio: 1,
+                                                borderRadius: 12,
+                                            }}
+                                        />
+                                    </AmbientBlob>
                                 ) : (
                                     <View
                                         style={{

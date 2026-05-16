@@ -173,6 +173,48 @@ export const musicService = {
         return done;
     },
 
+    async recordPlay(songId: string) {
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+        const { error } = await supabase
+            .from("play_history")
+            .insert({ user_id: user.id, song_id: songId });
+        if (error) throw error;
+    },
+
+    async getPlayHistory(limit = 20) {
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return [];
+        const { data, error } = await supabase
+            .from("play_history")
+            .select(`
+                song_id,
+                played_at,
+                songs (
+                    *,
+                    artists (name, image_url),
+                    albums (title, cover_url)
+                )
+            `)
+            .eq("user_id", user.id)
+            .order("played_at", { ascending: false })
+            .limit(limit * 4);
+        if (error) throw error;
+        const seen = new Set<string>();
+        return (data ?? [])
+            .filter((r) => {
+                if (seen.has(r.song_id)) return false;
+                seen.add(r.song_id);
+                return true;
+            })
+            .slice(0, limit)
+            .map((r) => (r as any).songs);
+    },
+
     async incrementPlayCount(songId: string) {
         const { error } = await supabase.rpc("increment_play_count", {
             song_id: songId,

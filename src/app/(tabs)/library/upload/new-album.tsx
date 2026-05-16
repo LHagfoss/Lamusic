@@ -61,7 +61,7 @@ export default function NewAlbumScreen() {
                 coverUrl: album.cover_url,
             });
             router.dismiss();
-            router.push("/library/upload/review");
+            router.navigate("/library/upload/review");
         } catch (error) {
             console.error(error);
             alert("Failed to create album");

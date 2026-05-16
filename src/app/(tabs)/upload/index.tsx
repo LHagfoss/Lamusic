@@ -228,7 +228,7 @@ export default function UploadScreen() {
                             title="Continue"
                             fill
                             disabled={!title}
-                            onPress={() => router.push("/news/artist")}
+                            onPress={() => router.navigate("/news/artist")}
                         />
                     </View>
                 </View>

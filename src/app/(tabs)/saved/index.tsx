@@ -94,7 +94,7 @@ export default function SavedScreen() {
     }));
 
     const handlePress = (item: any, type: string) => {
-        router.push({
+        router.navigate({
             pathname: "/(tabs)/saved/detail",
             params: {
                 id: item.id,

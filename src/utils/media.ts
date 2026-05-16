@@ -44,10 +44,11 @@ export async function extractPrimaryColor(uri: string): Promise<string | null> {
         const result = await ImageColors.getColors(uri, {
             fallback: "#000000",
             cache: true,
-            key: uri,
+            key: `v2:${uri}`,
         });
-        if (result.platform === "ios") return result.primary;
-        if (result.platform === "android") return result.dominant ?? result.average ?? null;
+        // background = sampled from corners/edges — ideal for ambient glow that blends with image
+        if (result.platform === "ios") return result.background;
+        if (result.platform === "android") return result.muted ?? result.dominant ?? null;
         return null;
     } catch {
         return null;

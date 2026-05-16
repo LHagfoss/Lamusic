@@ -95,7 +95,7 @@ export default function ProfileScreen() {
                     icon="moon.fill"
                     iconBgColor="#1C1C3A"
                     isLast
-                    onPress={() => router.push("/(tabs)/profile/appearance")}
+                    onPress={() => router.navigate("/(tabs)/profile/appearance")}
                 />
             </SettingsGroup>
 
@@ -105,7 +105,7 @@ export default function ProfileScreen() {
                     icon="music.note.list"
                     iconBgColor="#FF9500"
                     isLast
-                    onPress={() => router.push("/(tabs)/profile/my-content")}
+                    onPress={() => router.navigate("/(tabs)/profile/my-content")}
                 />
             </SettingsGroup>
 

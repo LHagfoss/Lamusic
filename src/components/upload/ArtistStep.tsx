@@ -68,7 +68,7 @@ export function ArtistStep({ onSelect, onBack }: ArtistStepProps) {
                     ListHeaderComponent={() => (
                         <PressableOpacity
                             onPress={() =>
-                                router.push("/library/upload/new-artist")
+                                router.navigate("/library/upload/new-artist")
                             }
                         >
                             <View

@@ -214,7 +214,7 @@ export default function TabLayout() {
                         onTogglePause={togglePlay}
                         onPrev={skipToPrevious}
                         onNext={skipToNext}
-                        onOpen={() => router.push("/player")}
+                        onOpen={() => router.navigate("/player")}
                     />
                 </NativeTabs.BottomAccessory>
             )}

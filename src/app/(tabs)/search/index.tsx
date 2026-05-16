@@ -71,18 +71,18 @@ export default function SearchScreen() {
             url: item.audio_url,
             duration: item.duration,
         });
-        router.push("/player");
+        router.navigate("/player");
     }
 
     function handleAlbumPress(item: any) {
-        router.push({
+        router.navigate({
             pathname: "/library/album",
             params: { albumId: item.id, artistName: item.artists?.name },
         });
     }
 
     function handleArtistPress(item: any) {
-        router.push({
+        router.navigate({
             pathname: "/library/artist",
             params: { name: item.name },
         });
@@ -128,7 +128,7 @@ export default function SearchScreen() {
                             label="View Song"
                             systemImage="arrow.up.right"
                             onPress={() =>
-                                router.push({
+                                router.navigate({
                                     pathname: "/library/song",
                                     params: { id: item.id },
                                 })
@@ -138,7 +138,7 @@ export default function SearchScreen() {
                             label="View Artist"
                             systemImage="person"
                             onPress={() =>
-                                router.push({
+                                router.navigate({
                                     pathname: "/library/artist",
                                     params: { name: item.artists?.name },
                                 })
@@ -172,7 +172,7 @@ export default function SearchScreen() {
                             label="View Artist"
                             systemImage="person"
                             onPress={() =>
-                                router.push({
+                                router.navigate({
                                     pathname: "/library/artist",
                                     params: { name: item.artists?.name },
                                 })

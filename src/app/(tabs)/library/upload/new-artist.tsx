@@ -52,7 +52,7 @@ export default function NewArtistScreen() {
             });
             setArtist({ id: artist.id, name: artist.name });
             router.dismiss();
-            router.push("/library/upload/album");
+            router.navigate("/library/upload/album");
         } catch (error) {
             console.error(error);
             alert("Failed to create artist");

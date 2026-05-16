@@ -11,7 +11,7 @@ export default function ArtistSelectionScreen() {
         <ArtistStep
             onSelect={(artist) => {
                 setArtist(artist);
-                router.push("/news/album");
+                router.navigate("/news/album");
             }}
             onBack={() => router.back()}
         />

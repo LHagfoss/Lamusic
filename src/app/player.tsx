@@ -19,6 +19,7 @@ import Animated, {
 } from "react-native-reanimated";
 import TrackPlayer, { RepeatMode } from "react-native-track-player";
 import { useCSSVariable } from "uniwind";
+import { AmbientBlob } from "@/src/components/AmbientBlob";
 import { AppText } from "@/src/components/AppText";
 import { usePlayerStore } from "@/src/lib/playerStore";
 import { AirplayButton } from "@/modules/airplay-button";
@@ -141,9 +142,11 @@ export default function PlayerScreen() {
     return (
         <View className="flex-1 bg-background">
             <View className="px-6 pt-6 pb-6">
-                <View
-                    className="w-full rounded-2xl items-center justify-center"
-                    style={{ aspectRatio: 1 }}
+                <AmbientBlob
+                    color={currentTrackData?.primary_color}
+                    blur={40}
+                    opacity={0.35}
+                    style={{ width: "100%", aspectRatio: 1 }}
                 >
                     <Animated.View
                         style={[
@@ -178,7 +181,7 @@ export default function PlayerScreen() {
                             pointerEvents="none"
                         />
                     </Animated.View>
-                </View>
+                </AmbientBlob>
             </View>
 
             <View className="px-6 flex-row items-center mb-4">
@@ -193,7 +196,7 @@ export default function PlayerScreen() {
                         onPress={() => {
                             if (!track?.artist) return;
                             router.dismiss();
-                            router.push({
+                            router.navigate({
                                 pathname: "/library/artist",
                                 params: { name: track.artist },
                             });
