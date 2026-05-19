@@ -1,3 +1,4 @@
+import Constants from "expo-constants";
 import { GlassView } from "expo-glass-effect";
 import { Stack, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
@@ -26,6 +27,8 @@ export default function ProfileScreen() {
     const { useMyContent } = useMusic();
     const { data: myContent } = useMyContent();
 
+    const version = Constants.expoConfig?.version;
+
     const cacheTotalBytes = useCacheStore((s) => s.totalBytes);
     const cacheMB = (cacheTotalBytes / (1024 * 1024)).toFixed(0);
 
@@ -40,8 +43,20 @@ export default function ProfileScreen() {
 
     const artists = myContent?.length ?? 0;
     const albums = myContent?.flatMap((a: any) => a.albums ?? []).length ?? 0;
-    const songs = myContent?.flatMap((a: any) => a.albums?.flatMap((al: any) => al.songs ?? []) ?? []).length ?? 0;
-    const totalPlays = myContent?.flatMap((a: any) => a.albums?.flatMap((al: any) => al.songs?.map((s: any) => s.play_count ?? 0) ?? []) ?? []).reduce((acc: number, n: number) => acc + n, 0) ?? 0;
+    const songs =
+        myContent?.flatMap(
+            (a: any) => a.albums?.flatMap((al: any) => al.songs ?? []) ?? [],
+        ).length ?? 0;
+    const totalPlays =
+        myContent
+            ?.flatMap(
+                (a: any) =>
+                    a.albums?.flatMap(
+                        (al: any) =>
+                            al.songs?.map((s: any) => s.play_count ?? 0) ?? [],
+                    ) ?? [],
+            )
+            .reduce((acc: number, n: number) => acc + n, 0) ?? 0;
 
     const handleLogOut = async () => {
         try {
@@ -101,11 +116,20 @@ export default function ProfileScreen() {
                     email={user?.email ?? ""}
                     initials={initials}
                     avatarUrl={user?.user_metadata?.avatar_url}
+                    onPress={() =>
+                        router.navigate("/(tabs)/profile/edit-profile")
+                    }
                 />
             </SettingsGroup>
 
             <View className="px-4 mb-8">
-                <GlassView style={{ borderRadius: 24, flexDirection: "row", overflow: "hidden" }}>
+                <GlassView
+                    style={{
+                        borderRadius: 24,
+                        flexDirection: "row",
+                        overflow: "hidden",
+                    }}
+                >
                     {[
                         { label: "Songs", value: songs },
                         { label: "Albums", value: albums },
@@ -122,10 +146,14 @@ export default function ProfileScreen() {
                                 borderRightColor: "rgba(128,128,128,0.2)",
                             }}
                         >
-                            <AppText style={{ fontSize: 22, fontWeight: "700" }} className="text-primary-text">
+                            <AppText
+                                weight="bold"
+                                size="xl"
+                                className="text-primary-text"
+                            >
                                 {stat.value}
                             </AppText>
-                            <AppText style={{ fontSize: 11 }} className="text-secondary-text">
+                            <AppText size="xs" className="text-secondary-text">
                                 {stat.label}
                             </AppText>
                         </View>
@@ -139,7 +167,9 @@ export default function ProfileScreen() {
                     icon="moon.fill"
                     iconBgColor="#1C1C3A"
                     isLast
-                    onPress={() => router.navigate("/(tabs)/profile/appearance")}
+                    onPress={() =>
+                        router.navigate("/(tabs)/profile/appearance")
+                    }
                 />
             </SettingsGroup>
 
@@ -157,10 +187,18 @@ export default function ProfileScreen() {
                     iconBgColor="#FF3B30"
                     isLast
                     onPress={() => {
-                        Alert.alert("Clear Cache", `Delete ${cacheMB} MB of cached audio?`, [
-                            { text: "Cancel", style: "cancel" },
-                            { text: "Clear", style: "destructive", onPress: () => cacheService.clearAll() },
-                        ]);
+                        Alert.alert(
+                            "Clear Cache",
+                            `Delete ${cacheMB} MB of cached audio?`,
+                            [
+                                { text: "Cancel", style: "cancel" },
+                                {
+                                    text: "Clear",
+                                    style: "destructive",
+                                    onPress: () => cacheService.clearAll(),
+                                },
+                            ],
+                        );
                     }}
                 />
             </SettingsGroup>
@@ -171,12 +209,14 @@ export default function ProfileScreen() {
                     icon="music.note.list"
                     iconBgColor="#FF9500"
                     isLast
-                    onPress={() => router.navigate("/(tabs)/profile/my-content")}
+                    onPress={() =>
+                        router.navigate("/(tabs)/profile/my-content")
+                    }
                 />
             </SettingsGroup>
 
             {__DEV__ && (
-                <SettingsGroup title="Developer">
+                <SettingsGroup title="Dev shi">
                     <SettingsItem
                         label={backfillProgress || "Backfill Colors"}
                         icon="paintbrush.fill"
@@ -185,6 +225,14 @@ export default function ProfileScreen() {
                         onPress={handleBackfill}
                     />
                 </SettingsGroup>
+            )}
+
+            {__DEV__ && (
+                <View className="px-4 items-center">
+                    <AppText variant="secondary" size="sm">
+                        Version: {version}
+                    </AppText>
+                </View>
             )}
         </ScrollView>
     );

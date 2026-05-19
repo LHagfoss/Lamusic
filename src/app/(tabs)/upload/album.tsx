@@ -17,7 +17,7 @@ export default function AlbumSelectionScreen() {
             artistName={artist.name}
             onSelect={(album) => {
                 setAlbum(album);
-                router.navigate(                "/news/review");
+                router.push("/upload/review");
             }}
             onBack={() => router.back()}
         />

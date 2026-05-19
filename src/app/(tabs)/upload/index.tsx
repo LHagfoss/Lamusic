@@ -1,17 +1,16 @@
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { PressableOpacity } from "pressto";
-import { Alert, ScrollView, TextInput, View } from "react-native";
+import { ScrollView, TextInput, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { AppButton, AppText, SettingsGroup } from "@/src/components";
 import { useUploadStore } from "@/src/lib/uploadStore";
 import { getAudioDuration } from "@/src/utils/audio";
-import { validateAudioFile } from "@/src/utils/media";
 
-export default function UploadScreen() {
+export default function FileSelectionScreen() {
     const {
         file,
         title,
@@ -39,19 +38,6 @@ export default function UploadScreen() {
         }
     }
 
-    async function acceptFile(asset: any) {
-        setFile(asset);
-        if (!title) {
-            setTitle(asset.name.split(".")[0]);
-        }
-        try {
-            const durationSeconds = await getAudioDuration(asset.uri);
-            if (durationSeconds > 0) setDuration(durationSeconds);
-        } catch (e) {
-            console.error("Failed to extract duration", e);
-        }
-    }
-
     async function pickAudio() {
         const result = await DocumentPicker.getDocumentAsync({
             type: "audio/*",
@@ -60,32 +46,21 @@ export default function UploadScreen() {
 
         if (!result.canceled) {
             const asset = result.assets[0];
-            const validation = validateAudioFile(
-                asset.name,
-                asset.size ?? 0,
-            );
-
-            if (!validation.ok) {
-                Alert.alert("File Too Large", validation.error);
-                return;
+            setFile(asset);
+            if (!title) {
+                const fileName = asset.name.split(".")[0];
+                setTitle(fileName);
             }
 
-            if (validation.warning) {
-                Alert.alert(
-                    "Large Uncompressed File",
-                    validation.warning,
-                    [
-                        { text: "Pick Different File", style: "cancel" },
-                        {
-                            text: "Use Anyway",
-                            onPress: () => acceptFile(asset),
-                        },
-                    ],
-                );
-                return;
+            // Extract duration
+            try {
+                const durationSeconds = await getAudioDuration(asset.uri);
+                if (durationSeconds > 0) {
+                    setDuration(durationSeconds);
+                }
+            } catch (e) {
+                console.error("Failed to extract duration", e);
             }
-
-            acceptFile(asset);
         }
     }
 
@@ -228,7 +203,9 @@ export default function UploadScreen() {
                             title="Continue"
                             fill
                             disabled={!title}
-                            onPress={() => router.navigate("/news/artist")}
+                            onPress={() =>
+                                router.navigate("/upload/artist")
+                            }
                         />
                     </View>
                 </View>

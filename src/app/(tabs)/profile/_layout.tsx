@@ -33,6 +33,13 @@ export default function ProfileLayout() {
                 }}
             />
             <Stack.Screen
+                name="edit-profile"
+                options={{
+                    title: "Edit Profile",
+                    headerLargeTitle: false,
+                }}
+            />
+            <Stack.Screen
                 name="my-content/index"
                 options={{
                     title: "My Content",

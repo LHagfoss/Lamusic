@@ -19,10 +19,11 @@ import Animated, {
 } from "react-native-reanimated";
 import TrackPlayer, { RepeatMode } from "react-native-track-player";
 import { useCSSVariable } from "uniwind";
+import { AirplayButton } from "@/modules/airplay-button";
+import * as Haptics from "expo-haptics";
 import { AmbientBlob } from "@/src/components/AmbientBlob";
 import { AppText } from "@/src/components/AppText";
 import { usePlayerStore } from "@/src/lib/playerStore";
-import { AirplayButton } from "@/modules/airplay-button";
 import { LiquidSlider } from "../components/LiquidSlider";
 import { useMusic } from "../hooks/useMusic";
 
@@ -112,6 +113,7 @@ export default function PlayerScreen() {
 
     const handleToggleFavorite = async () => {
         if (!track?.id) return;
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         try {
             await toggleFavoriteMutation.mutateAsync({
                 songId: track.id.toString(),
@@ -120,6 +122,31 @@ export default function PlayerScreen() {
         } catch (error) {
             console.error("Failed to toggle favorite:", error);
         }
+    };
+
+    const handleSkipPrevious = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        skipToPrevious();
+    };
+
+    const handleSkipNext = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        skipToNext();
+    };
+
+    const handleTogglePlay = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        fadeTogglePlay();
+    };
+
+    const handleToggleShuffle = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Selection);
+        toggleShuffle();
+    };
+
+    const handleToggleRepeat = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Selection);
+        toggleRepeatMode();
     };
 
     const formatTime = (seconds: number) => {
@@ -227,7 +254,7 @@ export default function PlayerScreen() {
                             <ActivityIndicator size="small" color={primary} />
                         ) : (
                             <SymbolView
-                                name={isLiked ? "heart.fill" : "heart"}
+                                name={isLiked ? "bookmark.fill" : "bookmark"}
                                 size={24}
                                 tintColor={isLiked ? primary : secondaryText}
                             />
@@ -265,7 +292,7 @@ export default function PlayerScreen() {
                         padding: 8,
                     }}
                 >
-                    <Pressable onPress={() => skipToPrevious()}>
+                    <Pressable onPress={handleSkipPrevious}>
                         <GlassView
                             style={{
                                 width: 56,
@@ -284,7 +311,7 @@ export default function PlayerScreen() {
                         </GlassView>
                     </Pressable>
 
-                    <Pressable onPress={fadeTogglePlay}>
+                    <Pressable onPress={handleTogglePlay}>
                         <GlassView
                             style={{
                                 width: 86,
@@ -303,7 +330,7 @@ export default function PlayerScreen() {
                         </GlassView>
                     </Pressable>
 
-                    <Pressable onPress={() => skipToNext()}>
+                    <Pressable onPress={handleSkipNext}>
                         <GlassView
                             style={{
                                 width: 56,
@@ -336,6 +363,9 @@ export default function PlayerScreen() {
                         progress={volume}
                         activeColor={secondaryText}
                         onSlidingComplete={(v) => {
+                            Haptics.impactAsync(
+                                Haptics.ImpactFeedbackStyle.Light,
+                            );
                             setVolume(v);
                             TrackPlayer.setVolume(v).catch(() => {});
                         }}
@@ -351,7 +381,7 @@ export default function PlayerScreen() {
             <View className="px-6 flex-row items-center justify-between">
                 <Pressable
                     className="items-center gap-1"
-                    onPress={toggleShuffle}
+                    onPress={handleToggleShuffle}
                 >
                     <View
                         style={{
@@ -360,23 +390,30 @@ export default function PlayerScreen() {
                             borderRadius: 22,
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: isShuffled ? primary : "transparent",
+                            backgroundColor: isShuffled
+                                ? primary
+                                : "transparent",
                         }}
                     >
                         <SymbolView
                             name="shuffle"
                             size={22}
-                            tintColor={isShuffled ? onPrimaryText : secondaryText}
+                            tintColor={
+                                isShuffled ? onPrimaryText : secondaryText
+                            }
                         />
                     </View>
-                    <AppText className="text-secondary-text" style={{ fontSize: 10 }}>
+                    <AppText
+                        className="text-secondary-text"
+                        style={{ fontSize: 10 }}
+                    >
                         Shuffle
                     </AppText>
                 </Pressable>
 
                 <Pressable
                     className="items-center gap-1"
-                    onPress={toggleRepeatMode}
+                    onPress={handleToggleRepeat}
                 >
                     <View
                         style={{
@@ -494,9 +531,14 @@ export default function PlayerScreen() {
                             const isActive = index === currentIndex;
                             return (
                                 <Pressable
-                                    onPress={() =>
-                                        !isActive && skipToIndex(index)
-                                    }
+                                    onPress={() => {
+                                        if (!isActive) {
+                                            Haptics.impactAsync(
+                                                Haptics.ImpactFeedbackStyle.Light,
+                                            );
+                                            skipToIndex(index);
+                                        }
+                                    }}
                                     style={({ pressed }) => ({
                                         opacity: pressed ? 0.7 : 1,
                                     })}
@@ -542,9 +584,12 @@ export default function PlayerScreen() {
                                         </View>
                                         {!isActive && (
                                             <Pressable
-                                                onPress={() =>
-                                                    removeFromQueue(index)
-                                                }
+                                                onPress={() => {
+                                                    Haptics.impactAsync(
+                                                        Haptics.ImpactFeedbackStyle.Light,
+                                                    );
+                                                    removeFromQueue(index);
+                                                }}
                                             >
                                                 <SymbolView
                                                     name="trash"

@@ -2,7 +2,7 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config,
-    name: "LaMusic",
+    name: "LaMusic (DEV)",
     slug: "lamusic",
     version: "1.0.0",
     orientation: "portrait",
@@ -12,7 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     userInterfaceStyle: "automatic",
     ios: {
         icon: "./assets/music-icon.icon",
-        bundleIdentifier: "com.lucas.lamusic",
+        bundleIdentifier: "com.lucas.lamusic.dev",
     },
     android: {
         package: "com.lucas.lamusic",

@@ -56,7 +56,7 @@ export default function NewArtistScreen() {
             });
             setArtist({ id: artist.id, name: artist.name });
             router.dismiss();
-            router.navigate("/news/album");
+            router.navigate("/upload/album");
         } catch (error) {
             console.error(error);
             alert("Failed to create artist");

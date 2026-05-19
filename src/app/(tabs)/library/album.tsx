@@ -76,7 +76,7 @@ export default function AlbumScreen() {
                             label: "Save",
                             icon: {
                                 type: "sfSymbol",
-                                name: isLiked ? "heart.fill" : "heart",
+                                name: isLiked ? "bookmark.fill" : "bookmark",
                             },
                             onPress: handleToggleFavorite,
                         },

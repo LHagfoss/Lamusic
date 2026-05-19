@@ -1,9 +1,12 @@
+import * as Haptics from "expo-haptics";
 import { GlassView } from "expo-glass-effect";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
 import { Pressable, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { scheduleOnRN } from "react-native-worklets";
 import TrackPlayer from "react-native-track-player";
 import { Uniwind, useCSSVariable } from "uniwind";
 import { AppText } from "@/src/components/AppText";
@@ -29,6 +32,37 @@ function AccessoryContent({
     const primaryText = String(useCSSVariable("--color-primary-text"));
     const track = usePlayerStore((s) => s.currentTrack);
 
+    const panGesture = Gesture.Pan()
+        .onUpdate((event) => {
+            "worklet";
+            if (event.translationY < -40) {
+                scheduleOnRN(() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    onOpen();
+                });
+            }
+        });
+
+    const handleTogglePause = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onTogglePause();
+    };
+
+    const handlePrev = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPrev();
+    };
+
+    const handleNext = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onNext();
+    };
+
+    const handleOpen = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        onOpen();
+    };
+
     if (!track) {
         return (
             <View className="flex-1 flex-row items-center px-4 h-full">
@@ -41,8 +75,82 @@ function AccessoryContent({
 
     if (placement === "inline") {
         return (
+            <GestureDetector gesture={panGesture}>
+                <Pressable
+                    onPress={handleOpen}
+                    className="p-3 flex-row items-center justify-between h-full w-full"
+                >
+                    <View className="flex-1 flex-row items-center gap-2">
+                        <View className="w-8 h-8 bg-secondary rounded-lg overflow-hidden">
+                            {track?.cover && (
+                                <Image
+                                    source={track.cover}
+                                    style={{ width: "100%", height: "100%" }}
+                                />
+                            )}
+                        </View>
+
+                        <View className="flex-1">
+                            <AppText
+                                size="sm"
+                                className="text-primary-text"
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                            >
+                                {track?.title ?? ""}
+                            </AppText>
+                            <AppText size="xs" className="text-secondary-text">
+                                {track?.artist ?? ""}
+                            </AppText>
+                        </View>
+                    </View>
+
+                    <View className="flex-1 flex-row justify-end items-center gap-2">
+                        <Pressable
+                            onPress={handlePrev}
+                            hitSlop={8}
+                            className="p-1 aspect-square rounded-full items-center justify-center"
+                        >
+                            <SymbolView
+                                name="backward.fill"
+                                size={14}
+                                tintColor={primaryText}
+                            />
+                        </Pressable>
+
+                        <Pressable
+                            onPress={handleTogglePause}
+                            hitSlop={8}
+                            className="p-1 aspect-square"
+                        >
+                            <SymbolView
+                                name={isPaused ? "play.fill" : "pause.fill"}
+                                size={18}
+                                tintColor={primaryText}
+                            />
+                        </Pressable>
+
+                        <Pressable
+                            onPress={handleNext}
+                            hitSlop={8}
+                            className="p-1 aspect-square rounded-full items-center justify-center"
+                        >
+                            <SymbolView
+                                name="forward.fill"
+                                size={14}
+                                tintColor={primaryText}
+                            />
+                        </Pressable>
+                    </View>
+                </Pressable>
+            </GestureDetector>
+        );
+    }
+
+    return (
+        <GestureDetector gesture={panGesture}>
             <Pressable
-                onPress={onOpen}
+                onPress={handleOpen}
                 className="p-3 flex-row items-center justify-between h-full w-full"
             >
                 <View className="flex-1 flex-row items-center gap-2">
@@ -70,115 +178,45 @@ function AccessoryContent({
                     </View>
                 </View>
 
-                <View className="flex-1 flex-row justify-end items-center gap-2">
+                <View className="flex-row justify-end items-center flex-1">
                     <Pressable
-                        onPress={onPrev}
+                        onPress={handlePrev}
                         hitSlop={8}
-                        className="p-1 aspect-square rounded-full items-center justify-center"
+                        className="p-2 aspect-square  rounded-full items-center justify-center"
                     >
                         <SymbolView
                             name="backward.fill"
-                            size={14}
-                            tintColor={primaryText}
-                        />
-                    </Pressable>
-
-                    <Pressable
-                        onPress={onTogglePause}
-                        hitSlop={8}
-                        className="p-1 aspect-square"
-                    >
-                        <SymbolView
-                            name={isPaused ? "play.fill" : "pause.fill"}
                             size={18}
                             tintColor={primaryText}
                         />
                     </Pressable>
 
                     <Pressable
-                        onPress={onNext}
+                        onPress={handleTogglePause}
                         hitSlop={8}
-                        className="p-1 aspect-square rounded-full items-center justify-center"
+                        className="p-2 aspect-square  rounded-full items-center justify-center"
+                    >
+                        <SymbolView
+                            name={isPaused ? "play.fill" : "pause.fill"}
+                            size={22}
+                            tintColor={primaryText}
+                        />
+                    </Pressable>
+
+                    <Pressable
+                        onPress={handleNext}
+                        hitSlop={8}
+                        className="p-2 aspect-square rounded-full items-center justify-center"
                     >
                         <SymbolView
                             name="forward.fill"
-                            size={14}
+                            size={18}
                             tintColor={primaryText}
                         />
                     </Pressable>
                 </View>
             </Pressable>
-        );
-    }
-
-    return (
-        <Pressable
-            onPress={onOpen}
-            className="p-3 flex-row items-center justify-between h-full w-full"
-        >
-            <View className="flex-1 flex-row items-center gap-2">
-                <View className="w-8 h-8 bg-secondary rounded-lg overflow-hidden">
-                    {track?.cover && (
-                        <Image
-                            source={track.cover}
-                            style={{ width: "100%", height: "100%" }}
-                        />
-                    )}
-                </View>
-
-                <View className="flex-1">
-                    <AppText
-                        size="sm"
-                        className="text-primary-text"
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                    >
-                        {track?.title ?? ""}
-                    </AppText>
-                    <AppText size="xs" className="text-secondary-text">
-                        {track?.artist ?? ""}
-                    </AppText>
-                </View>
-            </View>
-
-            <View className="flex-row justify-end items-center flex-1">
-                <Pressable
-                    onPress={onPrev}
-                    hitSlop={8}
-                    className="p-2 aspect-square  rounded-full items-center justify-center"
-                >
-                    <SymbolView
-                        name="backward.fill"
-                        size={18}
-                        tintColor={primaryText}
-                    />
-                </Pressable>
-
-                <Pressable
-                    onPress={onTogglePause}
-                    hitSlop={8}
-                    className="p-2 aspect-square  rounded-full items-center justify-center"
-                >
-                    <SymbolView
-                        name={isPaused ? "play.fill" : "pause.fill"}
-                        size={22}
-                        tintColor={primaryText}
-                    />
-                </Pressable>
-
-                <Pressable
-                    onPress={onNext}
-                    hitSlop={8}
-                    className="p-2 aspect-square rounded-full items-center justify-center"
-                >
-                    <SymbolView
-                        name="forward.fill"
-                        size={18}
-                        tintColor={primaryText}
-                    />
-                </Pressable>
-            </View>
-        </Pressable>
+        </GestureDetector>
     );
 }
 
@@ -240,7 +278,7 @@ export default function TabLayout() {
                 <NativeTabs.Trigger.Label>Saved</NativeTabs.Trigger.Label>
                 <NativeTabs.Trigger.Icon
                     selectedColor={primary}
-                    sf={{ default: "heart", selected: "heart.fill" }}
+                    sf={{ default: "bookmark", selected: "bookmark.fill" }}
                 />
             </NativeTabs.Trigger>
 
@@ -252,8 +290,8 @@ export default function TabLayout() {
                 <NativeTabs.Trigger.Icon
                     selectedColor={primary}
                     sf={{
-                        default: "arrow.up.circle",
-                        selected: "arrow.up.circle.fill",
+                        default: "square.and.arrow.up",
+                        selected: "square.and.arrow.up.fill",
                     }}
                 />
             </NativeTabs.Trigger>

@@ -150,7 +150,7 @@ export default function SavedDetailScreen() {
                         ) : (
                             <>
                                 <SymbolView
-                                    name="heart.slash.fill"
+                                    name="bookmark.slash.fill"
                                     size={18}
                                     tintColor="#FF3B30"
                                 />

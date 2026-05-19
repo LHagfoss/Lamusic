@@ -119,9 +119,8 @@ export default function ArtistScreen() {
                                 label: "Like",
                                 icon: {
                                     type: "sfSymbol",
-                                    name: isLiked ? "heart.fill" : "heart",
-                                },
-                                onPress: handleToggleFavorite,
+                                    name: isLiked ? "bookmark.fill" : "bookmark",
+                                },                                onPress: handleToggleFavorite,
                             },
                             {
                                 type: "menu",

@@ -11,6 +11,7 @@ export default function UploadLayout() {
                 headerBackButtonDisplayMode: "minimal",
                 headerTransparent: true,
                 headerTitleStyle: { color: primaryTextColor },
+                headerStyle: { backgroundColor },
                 contentStyle: { backgroundColor },
             }}
         >
